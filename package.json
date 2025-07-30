@@ -1,0 +1,62 @@
+{
+    "name": "tu-rest",
+    "packageManager": "yarn@4.9.2",
+    "productName": "tu-rest",
+    "version": "1.0.0",
+    "description": "My Electron application description",
+    "main": ".vite/build/main.cjs",
+    "type": "module",
+    "scripts": {
+        "start": "electron-forge start",
+        "package": "electron-forge package",
+        "make": "electron-forge make",
+        "publish": "electron-forge publish",
+        "lint": "eslint --ext .ts,.tsx ."
+    },
+    "keywords": [],
+    "author": {
+        "name": "tonnidiaz",
+        "email": "tonnidiazed@gmail.com"
+    },
+    "license": "MIT",
+    "devDependencies": {
+        "@electron-forge/cli": "^7.8.1",
+        "@electron-forge/maker-deb": "^7.8.1",
+        "@electron-forge/maker-zip": "^7.8.1",
+        "@electron-forge/plugin-auto-unpack-natives": "^7.8.1",
+        "@electron-forge/plugin-fuses": "^7.8.1",
+        "@electron-forge/plugin-vite": "^7.8.1",
+        "@electron/fuses": "^1.8.0",
+        "@tailwindcss/vite": "^4.1.11",
+        "@types/electron-squirrel-startup": "^1.0.2",
+        "@types/lodash": "^4",
+        "@types/node": "npm:*",
+        "@types/react": "^19.1.8",
+        "@types/react-dom": "^19.1.6",
+        "@vitejs/plugin-react": "^4.7.0",
+        "electron": "npm:37.2.4",
+        "tailwindcss": "^4.1.11",
+        "ts-node": "^10.9.2",
+        "typescript": "~4.5.4",
+        "vite": "^5.4.19",
+        "vite-tsconfig-paths": "npm:^5.1.4"
+    },
+    "dependencies": {
+        "@heroui/react": "^2.8.1",
+        "@reduxjs/toolkit": "^2.8.2",
+        "@window-splitter/react": "^1.1.2",
+        "axios": "^1.11.0",
+        "electron-squirrel-startup": "^1.0.1",
+        "framer-motion": "^12.23.9",
+        "immer": "^10.1.1",
+        "lodash": "^4.17.21",
+        "react": "^19.1.0",
+        "react-dom": "^19.1.0",
+        "react-json-view": "^1.21.3",
+        "react-redux": "^9.2.0",
+        "socket.io": "^4.8.1",
+        "socket.io-client": "^4.8.1",
+        "use-immer": "^0.11.0",
+        "valtio": "^2.1.5"
+    }
+}
