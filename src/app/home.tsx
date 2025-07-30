@@ -223,15 +223,6 @@ const HomeView = () => {
                 </PanelResizer>
                 <Panel collapsible>
                     <div className="relative flex-1 h-full w-full p-1 bg-default/20 rounded-md flex flex-col">
-                        {/* <ReactJson
-                            style={{ height: "100%" }}
-                            enableClipboard={false}
-                            displayArrayKey={false}
-                            displayDataTypes={false}
-                            theme={"google"}
-                            src={json}
-                        /> */}
-
                         <Tabs>
                             <Tab
                                 key="response"
@@ -242,6 +233,25 @@ const HomeView = () => {
                                     <div className="absolute right-0 top-0 z-20 m-2">
                                         <Button size="sm">Copy</Button>
                                     </div>
+                                    {homeState.response &&
+                                    typeof homeState.response == "object" ? (
+                                        <ReactJson
+                                            style={{ height: "100%" }}
+                                            enableClipboard={false}
+                                            displayArrayKey={false}
+                                            displayDataTypes={false}
+                                            theme={"google"}
+                                            src={homeState.response}
+                                        />
+                                    ) : (
+                                        <div className="text-sm text-default-foreground/50 w-full h-full">
+                                            {homeState.response || (
+                                                <div className="w-full h-full flex-col flex-center">
+                                                    <p>No response</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
                             </Tab>
                             <Tab key="headers" title="headers"></Tab>
@@ -254,4 +264,4 @@ const HomeView = () => {
     );
 };
 
-export default HomeView
+export default HomeView;
