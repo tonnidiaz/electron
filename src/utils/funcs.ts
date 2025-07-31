@@ -1,3 +1,6 @@
+import prettier from "prettier/standalone";
+import estreePlugin from "prettier/plugins/estree";
+import babelPlugin from "prettier/plugins/babel";
 export const sleep = (ms: number) =>
     new Promise((res) => {
         setTimeout(() => {
@@ -13,3 +16,10 @@ export const isValidURL = (s: string) => {
         return null;
     }
 };
+
+export const formatCode = async (code: string) =>
+    await prettier.format(code, {
+        parser: "json",
+        plugins: [babelPlugin, estreePlugin],
+        semi: true,
+    });

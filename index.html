@@ -1,13 +1,27 @@
-<!DOCTYPE html>
-<html class="dark" style="height: 100vh; background: #1b1b1d;">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="stylesheet" href="/src/index.css">
-    <title>Hello World!</title>
-
-  </head>
-  <body>
-    <div id="app" class="w-full"></div>
-    <script type="module" src="/src/renderer.ts"></script>
-  </body>
+<!doctype html>
+<html class="dark" style="height: 100vh; background: #1b1b1d">
+    <head>
+        <meta charset="UTF-8" />
+        <link rel="stylesheet" href="/src/index.css" />
+        <title>Hello World!</title>
+        <style>
+            body {
+                margin: 0;
+            }
+            .titlebar {
+                height: 30px;
+                background: blue;
+                color: white;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                app-region: drag;
+            }
+        </style>
+    </head>
+    <body>
+        <!-- <div class="titlebar">Cool titlebar</div> -->
+        <div id="app" class="w-full"></div>
+        <script type="module" src="/src/renderer.ts"></script>
+    </body>
 </html>

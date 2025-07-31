@@ -1,4 +1,4 @@
-import { app, BrowserWindow, Menu, MenuItem, protocol } from "electron";
+import { app, BrowserWindow, ipcMain, Menu, protocol } from "electron";
 import path from "node:path";
 import started from "electron-squirrel-startup";
 declare const MAIN_WINDOW_VITE_DEV_SERVER_URL: string;
@@ -56,13 +56,17 @@ protocol.registerSchemesAsPrivileged([
     { scheme: "localvideo", privileges: { bypassCSP: true } },
 ]);
 
+let mainWindow: BrowserWindow | undefined;
+
 const createWindow = () => {
     // Create the browser window.
-    const mainWindow = new BrowserWindow({
+    mainWindow = new BrowserWindow({
         width: 800,
         height: 600,
         alwaysOnTop: true,
         title: "Electron app from Tu",
+        // titleBarStyle: "hidden",
+        thickFrame: true,
         webPreferences: {
             preload: path.join(__dirname, "preload.js"),
         },
@@ -70,7 +74,7 @@ const createWindow = () => {
 
     // and load the index.html of the app.
     if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
-        console.log("\n", {MAIN_WINDOW_VITE_DEV_SERVER_URL}, "\n")
+        console.log("\n", { MAIN_WINDOW_VITE_DEV_SERVER_URL }, "\n");
         mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL);
     } else {
         mainWindow.loadFile(
@@ -80,9 +84,9 @@ const createWindow = () => {
             )
         );
     }
-    if (!app.isPackaged){
-    // Open the DevTools.
-      mainWindow.webContents.openDevTools();
+    if (!app.isPackaged) {
+        // Open the DevTools.
+        mainWindow.webContents.openDevTools();
     }
 };
 
@@ -97,6 +101,10 @@ app.on("ready", () => {
         callback(filePath);
     });
 
+    ipcMain.on("hello", (_e, msg) => {
+        console.log("\n[main:hello]", msg);
+        _e.reply("hello", "Hi! This is main!");
+    });
     createWindow();
 });
 
@@ -119,3 +127,18 @@ app.on("activate", () => {
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and import them here.
+
+ipcMain.on("show-context-menu", (event) => {
+    const template = [
+        {
+            label: "Menu Item 1",
+            click: () => {
+                event.sender.send("context-menu-command", "menu-item-1");
+            },
+        },
+        { type: "separator" },
+        { label: "Menu Item 2", type: "checkbox", checked: true },
+    ];
+    const menu = Menu.buildFromTemplate(template as any);
+    menu.popup({ window: BrowserWindow.fromWebContents(event.sender) });
+});

@@ -26,9 +26,9 @@ const TuButton = ({ isDisabled, isLoading, ...props }: ButtonProps & {}) => {
     }
 
     useEffect(() => {
-        ref.current.addEventListener("click", handleSubmit);
+        ref.current?.addEventListener("click", handleSubmit);
         return () => {
-            ref.current.removeEventListener("click", handleSubmit);
+            ref.current?.removeEventListener("click", handleSubmit);
         };
     }, []);
 

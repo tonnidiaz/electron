@@ -1,16 +1,18 @@
 import {
     Button,
     Divider,
+    Form,
     Input,
     Select,
     SelectItem,
     Tab,
     Tabs,
+    Textarea,
 } from "@heroui/react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Panel, PanelGroup, PanelResizer } from "@window-splitter/react";
 import { METHODS, TMethod } from "@/utils/consts";
-import { formatCode, isValidURL } from "@/utils/funcs";
+import { isValidURL, sleep } from "@/utils/funcs";
 import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
 import { TuRootState } from "@/redux/store";
@@ -19,9 +21,8 @@ import HomeTab from "@/components/HomeTab";
 import _ from "lodash";
 import TuButton from "@/components/TuButton";
 import TuForm from "@/components/TuForm";
-import CodeMirror from "@uiw/react-codemirror";
+import ReactJson from "react-json-view";
 import TuFocusable from "@/components/Focusable";
-import { json } from "@codemirror/lang-json";
 
 let started = false;
 const HomeView = () => {
@@ -29,7 +30,6 @@ const HomeView = () => {
     const dispatch = useDispatch();
 
     const [url, setUrl] = useState("");
-    const [jsonRes, setJsonRes] = useState("");
 
     const STORAGE_KEY = `/home__state`;
     const loadState = () => {
@@ -49,7 +49,6 @@ const HomeView = () => {
             // axios.get("http://localhost:8000/bots?limit=10").then(r=> console.log(r.data)).catch(console.log)
         }
     }, []);
-
     useEffect(() => {
         console.log("[on_home_state]");
         localStorage.setItem(
@@ -69,13 +68,6 @@ const HomeView = () => {
         // url changed. Update state.params
         genFullParams(false);
     }, [url]);
-
-    useEffect(() => {
-        const res = homeState.response;
-        if (res && typeof res == "object") {
-            formatCode(JSON.stringify(res)).then(setJsonRes);
-        }else {setJsonRes((res || "").toString())}
-    }, [homeState.response]);
 
     const genFullParams = (updateUrl: boolean) => {
         const _url = isValidURL(url);
@@ -142,7 +134,6 @@ const HomeView = () => {
                             <Input
                                 errorMessage="Fill out this field with a valid value"
                                 required
-                                spellCheck="false"
                                 value={url}
                                 onValueChange={setUrl}
                                 radius="sm"
@@ -166,9 +157,7 @@ const HomeView = () => {
                                         "data-[focus=true]:!bg-default/45",
                                         "group-data-[focus=true]:!bg-default/45",
                                         "group-data-[focus-visible=true]:ring-0!",
-                                        "font-mono!",
                                     ],
-                                    input: ["text-xs"],
                                 }}
                                 startContent={
                                     <div className="w-40 relative bg-">
@@ -246,24 +235,35 @@ const HomeView = () => {
                                 title="response"
                                 className="flex-1 relative min-h-0"
                             >
-                                <div className="p-1 bg-neutral-900/50 rounded-sm relative h-full flex flex-col max-h-full">
-                                    <div className="w-full flex gap-2 px-2 py-1 rounded-sm bg-default/40">
-                                        <Button size="sm" isIconOnly>
-                                            <i className="fi fi-br-copy"></i>
-                                        </Button>
-                                        <Button size="sm" isIconOnly onPress={()=> setJsonRes("")}>
-                                            <i className="fi fi-br-broom"></i>
-                                        </Button>
-                                    </div>
-                                    <div className="flex-1 min-h-0 overflow-y-scroll">
-                                        <CodeMirror
-                                            readOnly
-                                            theme={"dark"}
-                                            extensions={[json()]}
-                                            value={jsonRes}
-                                    
-                                        />
-                                    </div>
+                                <div className="p-1 bg-neutral-900/50 rounded-sm relative h-full overflow-scroll">
+                                    <TuFocusable
+                                        className="h-full w-full relative"
+                                    >
+                                        <div className="fixed right-0 top-0 z-20 m-2">
+                                            <Button size="sm">Copy</Button>
+                                        </div>
+                                        {homeState.response &&
+                                        typeof homeState.response ==
+                                            "object" ? (
+                                            <ReactJson
+                                                style={{ minHeight: "100%" }}
+                                                enableClipboard={false}
+                                                displayObjectSize={false}
+                                                displayArrayKey={false}
+                                                displayDataTypes={false}
+                                                theme={"google"}
+                                                src={homeState.response}
+                                            />
+                                        ) : (
+                                            <div className="text-sm text-default-foreground/50 w-full h-full">
+                                                {homeState.response || (
+                                                    <div className="w-full h-full flex-col flex-center">
+                                                        <p>No response</p>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+                                    </TuFocusable>
                                 </div>
                             </Tab>
                             <Tab key="headers" title="headers"></Tab>

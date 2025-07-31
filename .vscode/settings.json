@@ -15,6 +15,7 @@
     "class",
     "className",
     "classNames",
+    "inputWrapper",
     "ui"
   ],
   "tailwindCSS.experimental.classRegex": [
