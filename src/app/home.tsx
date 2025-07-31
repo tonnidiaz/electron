@@ -2,6 +2,7 @@ import {
     Button,
     Divider,
     Input,
+    Progress,
     Select,
     SelectItem,
     Tab,
@@ -10,8 +11,8 @@ import {
 import { useEffect, useState } from "react";
 import { Panel, PanelGroup, PanelResizer } from "@window-splitter/react";
 import { METHODS, TMethod } from "@/utils/consts";
-import { formatCode, isValidURL } from "@/utils/funcs";
-import axios from "axios";
+import { formatCode, isValidURL, sleep } from "@/utils/funcs";
+import axios, { AxiosError, isAxiosError } from "axios";
 import { useDispatch, useSelector } from "react-redux";
 import { TuRootState } from "@/redux/store";
 import { homeStore } from "@/redux/reducers/home";
@@ -20,16 +21,23 @@ import _ from "lodash";
 import TuButton from "@/components/TuButton";
 import TuForm from "@/components/TuForm";
 import CodeMirror from "@uiw/react-codemirror";
-import TuFocusable from "@/components/Focusable";
 import { json } from "@codemirror/lang-json";
+import { useSkipInitialEffect } from "@/utils/hooks";
 
 let started = false;
+let axiosAbortCtrl: AbortController | undefined;
+
 const HomeView = () => {
     const homeState = useSelector((s: TuRootState) => s.home);
     const dispatch = useDispatch();
 
     const [url, setUrl] = useState("");
     const [jsonRes, setJsonRes] = useState("");
+    const [response, setResponse] = useState<{
+        status: number;
+        duration: number;
+        size: number;
+    }>({ status: 200, duration: 100, size: 100 });
 
     const STORAGE_KEY = `/home__state`;
     const loadState = () => {
@@ -38,44 +46,12 @@ const HomeView = () => {
         if (s) {
             const jsonS = JSON.parse(s);
             dispatch(homeStore.updateState(jsonS));
-            setUrl(jsonS.url);
+            if (isValidURL(jsonS.url)) {
+                const queryStr = new URLSearchParams(jsonS.params).toString();
+                setUrl(jsonS.url + (queryStr ? "?" + queryStr : ''));
+            }
         }
     };
-
-    useEffect(() => {
-        if (!started) {
-            started = true;
-            loadState();
-            // axios.get("http://localhost:8000/bots?limit=10").then(r=> console.log(r.data)).catch(console.log)
-        }
-    }, []);
-
-    useEffect(() => {
-        console.log("[on_home_state]");
-        localStorage.setItem(
-            STORAGE_KEY,
-            JSON.stringify({ ...homeState, url, response: null })
-        );
-    }, [homeState]);
-
-    useEffect(() => {
-        // console.log("params changed");
-        // params changes. Update local url
-        genFullParams(true);
-    }, [homeState.params]);
-
-    useEffect(() => {
-        // console.log("url changed");
-        // url changed. Update state.params
-        genFullParams(false);
-    }, [url]);
-
-    useEffect(() => {
-        const res = homeState.response;
-        if (res && typeof res == "object") {
-            formatCode(JSON.stringify(res)).then(setJsonRes);
-        }else {setJsonRes((res || "").toString())}
-    }, [homeState.response]);
 
     const genFullParams = (updateUrl: boolean) => {
         const _url = isValidURL(url);
@@ -99,19 +75,22 @@ const HomeView = () => {
         if (updateUrl) {
             // on params update
             setUrl(newUrl);
-            dispatch(homeStore.setField({ key: "url", value: newUrl }));
+            dispatch(homeStore.setField(["url", newUrl]));
         } else {
             // on url field update
-            dispatch(homeStore.setField({ key: "params", value: entries }));
+            dispatch(homeStore.setField(["params", entries]));
         }
     };
 
     const onSubmit = async (e) => {
+        const t1 = Date.now();
         try {
+            axiosAbortCtrl = new AbortController();
             e.preventDefault();
-            console.log({ url });
-            dispatch(homeStore.setField({ key: "response", value: null }));
-            const req = await axios.request({
+            console.log(homeState.method, { url });
+            dispatch(homeStore.setField(["response", null]));
+            // await sleep(3000);
+            const res = await axios.request({
                 url,
                 method: homeState.method,
                 // params: Object.fromEntries(homeState.params),
@@ -120,16 +99,94 @@ const HomeView = () => {
                     homeState.method == "GET"
                         ? null
                         : Object.fromEntries(homeState.body),
+                signal: axiosAbortCtrl.signal,
             });
-
-            dispatch(homeStore.setField({ key: "response", value: req.data }));
+            let elapsed = Date.now() - t1;
+            dispatch(homeStore.setField(["response", res.data]));
+            setResponse({
+                status: res.status,
+                duration: elapsed,
+                size: Number(res.headers["content-length"]) / 1024,
+            });
         } catch (err) {
+            const duration = Date.now() - t1;
             console.log(err);
+            let msg: any = { message: "Failed to send request." };
+            let status = 500;
+            let size = 0;
+
+            if (axios.isCancel(err)) {
+                console.log("Request canceled");
+                msg = "Request canceled!";
+            } else if (isAxiosError(err)) {
+                let _err = err as AxiosError;
+                msg = _err.response?.data || _err.message;
+                status = _err.status || status;
+                size = Number(_err.config?.headers["content-length"] || 0);
+            }
+            setResponse({ status, duration, size: 0 });
+            dispatch(homeStore.setField(["response", msg]));
         }
     };
+
+    /* ---------------------------- EFFECTS -------------------------------- */
+
+    useEffect(() => {
+        if (!started) {
+            started = true;
+            loadState();
+            // axios.get("http://localhost:8000/bots?limit=10").then(r=> console.log(r.data)).catch(console.log)
+        }
+
+        window.electronAPI.onShowEditorCtxMenu((e, act, target) => {
+            switch (act) {
+                case "clear":
+                    if (target == "editor") setJsonRes("");
+                    else if (target == "input") setUrl("");
+                    break;
+            }
+        });
+    }, []);
+
+    useSkipInitialEffect(() => {
+        console.log("[on_home_state]");
+        const _url = isValidURL(url);
+        localStorage.setItem(
+            STORAGE_KEY,
+            JSON.stringify({
+                ...homeState,
+                url: _url ? `${_url.origin}${_url.pathname}` : _url,
+                response: "",
+            })
+        );
+    }, [homeState]);
+
+    useSkipInitialEffect(() => {
+        started = true;
+        console.log("params changed", homeState.params);
+        // params changes. Update local url
+        genFullParams(true);
+    }, [homeState.params]);
+
+    useSkipInitialEffect(() => {
+        started = true;
+        console.log("url changed", url);
+        // url changed. Update state.params
+        genFullParams(false);
+    }, [url]);
+
+    useEffect(() => {
+        const res = homeState.response;
+        if (res && typeof res == "object") {
+            formatCode(JSON.stringify(res)).then(setJsonRes);
+        } else {
+            setJsonRes((res || "").toString());
+        }
+    }, [homeState.response]);
+    /* ---------------------------- END EFFECTS -------------------------------- */
     return (
         <div className="flex flex-col gap-2 h-full overflow-hidden">
-            <PanelGroup orientation="vertical">
+            <PanelGroup autosaveId="home__panel" orientation="vertical">
                 <Panel
                     isStaticAtRest
                     collapsible
@@ -148,6 +205,11 @@ const HomeView = () => {
                                 radius="sm"
                                 placeholder="e.g. https://tunedstreamz.com"
                                 type="url"
+                                onContextMenu={(_e) => {
+                                    window.electronAPI.showEditorCtxMenu(
+                                        "input"
+                                    );
+                                }}
                                 classNames={{
                                     inputWrapper: [
                                         "focus-within:bg-default/60!",
@@ -189,8 +251,13 @@ const HomeView = () => {
                                                 homeState.method,
                                             ]}
                                             onChange={(v) =>
-                                                (homeState.method = v.target
-                                                    .value as TMethod)
+                                                dispatch(
+                                                    homeStore.setField([
+                                                        "method",
+                                                        v.target
+                                                            .value as TMethod,
+                                                    ])
+                                                )
                                             }
                                         >
                                             {METHODS.map((el) => (
@@ -251,23 +318,79 @@ const HomeView = () => {
                                         <Button size="sm" isIconOnly>
                                             <i className="fi fi-br-copy"></i>
                                         </Button>
-                                        <Button size="sm" isIconOnly onPress={()=> setJsonRes("")}>
+                                        <Button
+                                            size="sm"
+                                            isIconOnly
+                                            onPress={() => setJsonRes("")}
+                                        >
                                             <i className="fi fi-br-broom"></i>
                                         </Button>
                                     </div>
-                                    <div className="flex-1 min-h-0 overflow-y-scroll">
-                                        <CodeMirror
-                                            readOnly
-                                            theme={"dark"}
-                                            extensions={[json()]}
-                                            value={jsonRes}
-                                    
-                                        />
+
+                                    <div
+                                        onContextMenu={(_e) => {
+                                            window.electronAPI.showEditorCtxMenu(
+                                                "editor"
+                                            );
+                                        }}
+                                        className="flex-1 min-h-0 overflow-y-scroll"
+                                    >
+                                        {homeState.response == null ? (
+                                            <div className="w-full h-full flex-center gap-2 flex-col opacity-70">
+                                                <Progress
+                                                    style={{ width: 200 }}
+                                                    isIndeterminate
+                                                    size="sm"
+                                                    color="default"
+                                                />
+                                                <Button
+                                                    onPress={() => {
+                                                        axiosAbortCtrl.abort();
+                                                    }}
+                                                    size="sm"
+                                                    variant="ghost"
+                                                    color="warning"
+                                                >
+                                                    Cancel request
+                                                </Button>
+                                            </div>
+                                        ) : (
+                                            <CodeMirror
+                                                readOnly
+                                                theme={"dark"}
+                                                extensions={[json()]}
+                                                value={jsonRes}
+                                                className="**:bg-neutral-900/20!"
+                                            />
+                                        )}
                                     </div>
                                 </div>
                             </Tab>
                             <Tab key="headers" title="headers"></Tab>
                             <Tab key="cookies" title="cookies"></Tab>
+                            <Tab
+                                style={{ pointerEvents: "none" }}
+                                disabled
+                                title={
+                                    !homeState.response ? null : (
+                                        <div
+                                            className={`flex gap-3 items-center flex-1 font-mono text-xs font-bold ${response.status != 200 ? "text-red-500" : "text-success"}`}
+                                        >
+                                            <span title="status">
+                                                {response.status}
+                                            </span>
+                                            <span title="duration">
+                                                {" "}
+                                                <i className="fi fi-br-clock"></i>
+                                                {response.duration}ms
+                                            </span>
+                                            <span title="size">
+                                                {response.size.toFixed(3)}kb
+                                            </span>
+                                        </div>
+                                    )
+                                }
+                            />
                         </Tabs>
                     </div>
                 </Panel>

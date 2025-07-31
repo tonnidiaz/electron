@@ -26,9 +26,10 @@
     }
   },
   "include": [
+    "preload.d.ts",
     "src/**/*.ts",
     "src/**/*.tsx",
     "src/**/*.js",
-    "src/**/*.jsx", "src/components/HeadersTab copy.tsx.o", "src/components/HeadersTab copy.tsx.map",
+    "src/**/*.jsx"
 ]
 }

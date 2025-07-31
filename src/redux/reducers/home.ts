@@ -2,14 +2,14 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { WritableDraft } from "immer";
 
 type T = any[][];
-
+ 
 const initialState = {
     headers: [] as T,
     params: [] as T,
     body: [] as T,
     method: "GET",
     url: "",
-    response: null as any
+    response: '' as any
 }
 
 type State = typeof initialState;
@@ -19,10 +19,8 @@ export const homeSlice = createSlice({
     name: 'home',
     initialState,
     reducers: {
-        setField<K extends StateKey>(state: WritableDraft<State>, {payload} : PayloadAction<{
-            key: K; value: State[K]
-        }>){
-            state[payload.key] = payload.value;
+        setField<K extends StateKey>(state: WritableDraft<State>,  {payload} : PayloadAction<[key: K, value: State[K]]>){
+            state[payload[0]] = payload[1];
         },
         updateState(state, {payload}:PayloadAction<Object>){
             const stateKeys = Object.keys(initialState);

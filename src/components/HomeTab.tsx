@@ -47,7 +47,7 @@ const HomeTab = ({ k: key }: { k: "headers" | "params" | "body" }) => {
                                 draft[i][0] = _k;
                             }
                         });
-                        dispatch(homeStore.setField({ key, value: item }));
+                        dispatch(homeStore.setField([key, item]));
                     }}
                 />
             </TableCell>
@@ -69,7 +69,7 @@ const HomeTab = ({ k: key }: { k: "headers" | "params" | "body" }) => {
                         const item = produce(homeState[key], (draft) => {
                             draft[i][1] = _v;
                         });
-                        dispatch(homeStore.setField({ key, value: item }));
+                        dispatch(homeStore.setField([key, item]));
                     }}
                 />
             </TableCell>

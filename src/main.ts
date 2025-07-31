@@ -1,4 +1,11 @@
-import { app, BrowserWindow, ipcMain, Menu, protocol } from "electron";
+import {
+    app,
+    BrowserWindow,
+    ipcMain,
+    Menu,
+    MenuItem,
+    protocol,
+} from "electron";
 import path from "node:path";
 import started from "electron-squirrel-startup";
 declare const MAIN_WINDOW_VITE_DEV_SERVER_URL: string;
@@ -15,6 +22,17 @@ const template = [
             { role: "save", label: "&Save" },
             { role: "save as", label: "Save as" },
         ],
+    },
+    {
+        label: "Edit",
+        submenu: [
+            { role: "undo" },
+            { role: "redo" },
+            { type: "separator" },
+            { role: "selectAll" },
+            { role: "copy" },
+            { role: "cut" },
+        ]
     },
 
     {
@@ -140,5 +158,21 @@ ipcMain.on("show-context-menu", (event) => {
         { label: "Menu Item 2", type: "checkbox", checked: true },
     ];
     const menu = Menu.buildFromTemplate(template as any);
+    menu.popup({ window: BrowserWindow.fromWebContents(event.sender) });
+});
+
+ipcMain.on("showEditorCtxMenu", (event, target) => {
+    const temp = [
+        new MenuItem({ label: "Select all", role: "selectAll" }),
+        new MenuItem({ label: "Copy", role: "copy" }),
+        new MenuItem({ type: "separator" }),
+        new MenuItem({
+            label: "Clear",
+            click: () => {
+                event.sender.send("showEditorCtxMenu", "clear", target);
+            },
+        }),
+    ];
+    const menu = Menu.buildFromTemplate(temp);
     menu.popup({ window: BrowserWindow.fromWebContents(event.sender) });
 });

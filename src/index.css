@@ -21,3 +21,8 @@ body, html {
     height: 100%;
     overflow: hidden;
 }
+@layer theme{
+.bg-bg{
+    @apply dark:bg-neutral-900!;
+}
+}

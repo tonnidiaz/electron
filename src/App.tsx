@@ -11,7 +11,7 @@ const App = () => {
     return (
         <Provider store={store}>
         <Providers>
-            <main className="h-full w-full p-4 max-h-full dark:bg-neutral-900">
+            <main className="h-full w-full p-4 max-h-full bg-bg">
                 <HomeView/>
             </main>
         </Providers>
