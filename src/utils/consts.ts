@@ -1,0 +1,1 @@
+export const METHODS = ["GET", "POST", "OPTIONS", "DELETE"] as const;

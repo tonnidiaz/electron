@@ -1,0 +1,31 @@
+{
+  "include": [
+    "vite.config.*",
+    "vite.*.config.*",
+    "vitest.config.*",
+    "cypress.config.*",
+    "nightwatch.conf.*",
+    "playwright.config.*", 
+    "eslint.config.*",
+    "scripts/**/*.ts"
+  ],
+  "compilerOptions": {
+    "strict": false,
+    "noEmit": true,
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
+
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    // "types": ["node"],
+    "composite": true,
+    "skipLibCheck": true,
+    "allowSyntheticDefaultImports": true,
+    "noImplicitAny": false,
+    "noUnusedLocals": false,
+    "paths":{
+        "#build/ui": [
+        "./node_modules/@nuxt/ui/.nuxt/ui"
+      ]
+    }
+  }
+}

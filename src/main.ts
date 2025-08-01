@@ -1,0 +1,178 @@
+import {
+    app,
+    BrowserWindow,
+    ipcMain,
+    Menu,
+    MenuItem,
+    protocol,
+} from "electron";
+import path from "node:path";
+import started from "electron-squirrel-startup";
+declare const MAIN_WINDOW_VITE_DEV_SERVER_URL: string;
+declare const MAIN_WINDOW_VITE_NAME: string;
+// Handle creating/removing shortcuts on Windows when installing/uninstalling.
+if (started) {
+    app.quit();
+}
+
+const template = [
+    {
+        label: "File",
+        submenu: [
+            { role: "save", label: "&Save" },
+            { role: "save as", label: "Save as" },
+        ],
+    },
+    {
+        label: "Edit",
+        submenu: [
+            { role: "undo" },
+            { role: "redo" },
+            { type: "separator" },
+            { role: "selectAll" },
+            { role: "copy" },
+            { role: "cut" },
+        ]
+    },
+
+    {
+        label: "View",
+        submenu: [
+            {
+                role: "reload",
+            },
+            {
+                role: "toggledevtools",
+            },
+            {
+                type: "separator",
+            },
+            {
+                role: "resetzoom",
+            },
+            {
+                role: "zoomin",
+            },
+            {
+                role: "zoomout",
+            },
+            {
+                type: "separator",
+            },
+            {
+                role: "togglefullscreen",
+            },
+        ],
+    },
+];
+
+const menu = Menu.buildFromTemplate(template as any);
+Menu.setApplicationMenu(menu);
+
+// 1. Declare privileged scheme
+protocol.registerSchemesAsPrivileged([
+    { scheme: "localvideo", privileges: { bypassCSP: true } },
+]);
+
+let mainWindow: BrowserWindow | undefined;
+
+const createWindow = () => {
+    // Create the browser window.
+    mainWindow = new BrowserWindow({
+        width: 800,
+        height: 600,
+        alwaysOnTop: true,
+        title: "Turest",
+        // titleBarStyle: "hidden",
+        thickFrame: true,
+        webPreferences: {
+            preload: path.join(__dirname, "preload.js"),
+        },
+    });
+
+    // and load the index.html of the app.
+    if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
+        console.log("\n", { MAIN_WINDOW_VITE_DEV_SERVER_URL }, "\n");
+        mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL);
+    } else {
+        mainWindow.loadFile(
+            path.join(
+                __dirname,
+                `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`
+            )
+        );
+    }
+    if (!app.isPackaged) {
+        // Open the DevTools.
+        mainWindow.webContents.openDevTools();
+    }
+};
+
+// This method will be called when Electron has finished
+// initialization and is ready to create browser windows.
+// Some APIs can only be used after this event occurs.
+app.on("ready", () => {
+    protocol.registerFileProtocol("localvideo", (request, callback) => {
+        const filePath = decodeURIComponent(
+            request.url.replace("localvideo://", "")
+        );
+        callback(filePath);
+    });
+
+    ipcMain.on("hello", (_e, msg) => {
+        console.log("\n[main:hello]", msg);
+        _e.reply("hello", "Hi! This is main!");
+    });
+    createWindow();
+});
+
+// Quit when all windows are closed, except on macOS. There, it's common
+// for applications and their menu bar to stay active until the user quits
+// explicitly with Cmd + Q.
+app.on("window-all-closed", () => {
+    if (process.platform !== "darwin") {
+        app.quit();
+    }
+});
+
+app.on("activate", () => {
+    // On OS X it's common to re-create a window in the app when the
+    // dock icon is clicked and there are no other windows open.
+    if (BrowserWindow.getAllWindows().length === 0) {
+        createWindow();
+    }
+});
+
+// In this file you can include the rest of your app's specific main process
+// code. You can also put them in separate files and import them here.
+
+ipcMain.on("show-context-menu", (event) => {
+    const template = [
+        {
+            label: "Menu Item 1",
+            click: () => {
+                event.sender.send("context-menu-command", "menu-item-1");
+            },
+        },
+        { type: "separator" },
+        { label: "Menu Item 2", type: "checkbox", checked: true },
+    ];
+    const menu = Menu.buildFromTemplate(template as any);
+    menu.popup({ window: BrowserWindow.fromWebContents(event.sender) });
+});
+
+ipcMain.on("showEditorCtxMenu", (event, target) => {
+    const temp = [
+        new MenuItem({ label: "Select all", role: "selectAll" }),
+        new MenuItem({ label: "Copy", role: "copy" }),
+        new MenuItem({ type: "separator" }),
+        new MenuItem({
+            label: "Clear",
+            click: () => {
+                event.sender.send("showEditorCtxMenu", "clear", target);
+            },
+        }),
+    ];
+    const menu = Menu.buildFromTemplate(temp);
+    menu.popup({ window: BrowserWindow.fromWebContents(event.sender) });
+});
