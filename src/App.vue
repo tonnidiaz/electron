@@ -1,7 +1,13 @@
 <template>
     <UApp>
-        <main class="h-full w-full py-4 max-h-full bg-bg">
-            <RouterView />
+        <main class="h-full w-full max-h-full bg-default">
+            <div class="h-full max-h-full flex w-full">
+                <TuSidebar/>
+                <div class="flex-1 h-full max-h-full py-4">
+                    <RouterView />
+
+                </div>
+            </div>
         </main>
     </UApp>
 </template>

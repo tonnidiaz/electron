@@ -24,6 +24,6 @@ body, html {
   }
   @layer theme{
   .bg-bg{
-      @apply dark:bg-neutral-900!;
+      /* @apply dark:bg-neutral-900!; */
   }
   }

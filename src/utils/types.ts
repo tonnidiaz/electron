@@ -10,3 +10,5 @@ export type PublicCodeMirrorProps = Omit<
   RawProps,
   keyof VNodeProps | keyof AllowedComponentProps
 >;
+
+export type TableSelection = {[k: number]: boolean};

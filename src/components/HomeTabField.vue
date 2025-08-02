@@ -27,7 +27,9 @@
             if ((!k && !item.at(1)) && index + 2 == dataLen) {
                 items.pop();
             } else if (k && items.length <= index) {
-                items.push(['', ''])
+                console.log('[i]', homeStore.selected[k]);
+                homeStore.selected[k][items.length - 2] = true;
+                homeStore.selected[k][items.length - 1] = true;
             }
         }
     }" >

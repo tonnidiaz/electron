@@ -8,6 +8,7 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    copy: typeof import('./src/components/HomeTabField copy.vue')['default']
     HomeBodyTab: typeof import('./src/components/HomeBodyTab.vue')['default']
     HomeTab: typeof import('./src/components/HomeTab.vue')['default']
     HomeTabField: typeof import('./src/components/HomeTabField.vue')['default']
@@ -18,16 +19,19 @@ declare module 'vue' {
     Tu: typeof import('./src/components/Tu.vue')['default']
     TuCodeMirror: typeof import('./src/components/TuCodeMirror.vue')['default']
     TuPanel: typeof import('./src/components/TuPanel.vue')['default']
+    TuSidebar: typeof import('./src/components/TuSidebar.vue')['default']
     UBadge: typeof import('./../../../node_modules/@nuxt/ui/dist/runtime/components/Badge.vue')['default']
     UButton: typeof import('./../../../node_modules/@nuxt/ui/dist/runtime/components/Button.vue')['default']
     UButtonGroup: typeof import('./../../../node_modules/@nuxt/ui/dist/runtime/components/ButtonGroup.vue')['default']
     UFileUpload: typeof import('./../../../node_modules/@nuxt/ui/dist/runtime/components/FileUpload.vue')['default']
     UForm: typeof import('./../../../node_modules/@nuxt/ui/dist/runtime/components/Form.vue')['default']
     UInput: typeof import('./../../../node_modules/@nuxt/ui/dist/runtime/components/Input.vue')['default']
+    UNavigationMenu: typeof import('./../../../node_modules/@nuxt/ui/dist/runtime/components/NavigationMenu.vue')['default']
     UProgress: typeof import('./../../../node_modules/@nuxt/ui/dist/runtime/components/Progress.vue')['default']
     USelect: typeof import('./../../../node_modules/@nuxt/ui/dist/runtime/components/Select.vue')['default']
     USeparator: typeof import('./../../../node_modules/@nuxt/ui/dist/runtime/components/Separator.vue')['default']
     UTable: typeof import('./../../../node_modules/@nuxt/ui/dist/runtime/components/Table.vue')['default']
     UTabs: typeof import('./../../../node_modules/@nuxt/ui/dist/runtime/components/Tabs.vue')['default']
+    UTree: typeof import('./../../../node_modules/@nuxt/ui/dist/runtime/components/Tree.vue')['default']
   }
 }

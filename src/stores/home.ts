@@ -1,17 +1,20 @@
-import { HttpOpts, Method } from "@/utils/types";
+import { HttpOpts, Method, TableSelection } from "@/utils/types";
 import { defineStore } from "pinia";
 
 type T = [string, any][];
 // const testUrl = "http://localhost:8000/bots/wuecwiuhfwehiufw?full=true";
 
 export type TKey = "params" | "body" | "headers";
-
 export const useHomeStore = defineStore("home", {
     state: () => {
         console.log('Homeview')
         return {
         headers: [] as T,
         params: [] as T,
+        selected: {
+            params: {0: true} as TableSelection,
+            headers: {0: true} as TableSelection,
+        },
         body: "",
         url: "",
         method: "GET" as Method,
