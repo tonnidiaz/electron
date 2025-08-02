@@ -1,9 +1,10 @@
 <script setup lang="ts">
     import { TableColumn } from '@nuxt/ui/runtime/components/Table.vue.js';
-    import { computed, h, resolveComponent } from 'vue';
+    import { computed, h } from 'vue';
     import { useHomeStore } from '@/stores/home';
+    import HomeTabField from './HomeTabField.vue';
 
-    const props = defineProps<{ k: 'params' | 'body' | 'headers' }>();
+    const props = defineProps<{ k: 'params' | 'headers' }>();
 
     const homeStore = useHomeStore()
 
@@ -13,32 +14,15 @@
         key: el.at(0) || "", value: el.at(1)
     })))
 
-    const UInput = resolveComponent("UInput");
     const columns: TableColumn<Row>[] = [
         {
             accessorKey: 'key', header: 'key', cell: ({ row }) => {
-                const item = homeStore[props.k];
-                // console.log({item})
-                return h(UInput, {
-                    placeholder: 'key', class: 'w-full', modelValue: item[row.index]?.at(0), 'onUpdate:modelValue': (k) => {
-                        item[row.index] = [k, item[row.index]?.at(1) || ''];
-                        if ((!k && !item[row.index].at(1)) && row.index + 2 == data.value.length) {
-                            item.pop();
-                        } else if (k && item.length <= row.index) {
-                            item.push(["", ""])
-                        }
-                    }
-                })
+                return h(HomeTabField, { placeholder: 'key', k: props.k, index: row.index, dataLen: data.value.length, isVal: false })
             }
         },
         {
             accessorKey: 'value', header: 'value', cell: ({ row }) => {
-                const item = homeStore[props.k];
-                return h(UInput, {
-                    placeholder: 'value', class: 'w-full', modelValue: item[row.index]?.at(1), 'onUpdate:modelValue': (k) => {
-                        item[row.index] = [item[row.index]?.at(0) || '', k];
-                    }
-                })
+                return h(HomeTabField, { placeholder: 'value', k: props.k, index: row.index, dataLen: data.value.length, isVal: true })
             }
         },
 

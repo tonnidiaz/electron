@@ -1,0 +1,11 @@
+@reference "../tw.css";
+
+.cm-editor {
+    height: 100%;
+    @apply w-2xl!;
+
+}
+
+.cm-content {
+    @apply bg-neutral-900!
+}

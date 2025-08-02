@@ -8,17 +8,20 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    HomeBodyTab: typeof import('./src/components/HomeBodyTab.vue')['default']
     HomeTab: typeof import('./src/components/HomeTab.vue')['default']
+    HomeTabField: typeof import('./src/components/HomeTabField.vue')['default']
+    'HomeTabField copy': typeof import('./src/components/HomeTabField copy.vue')['default']
     ResTable: typeof import('./src/components/ResTable.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     Tu: typeof import('./src/components/Tu.vue')['default']
-    TuCodMirror: typeof import('./src/components/TuCodMirror.vue')['default']
-    TuCodMmirror: typeof import('./src/components/TuCodMmirror.vue')['default']
+    TuCodeMirror: typeof import('./src/components/TuCodeMirror.vue')['default']
     TuPanel: typeof import('./src/components/TuPanel.vue')['default']
     UBadge: typeof import('./../../../node_modules/@nuxt/ui/dist/runtime/components/Badge.vue')['default']
     UButton: typeof import('./../../../node_modules/@nuxt/ui/dist/runtime/components/Button.vue')['default']
     UButtonGroup: typeof import('./../../../node_modules/@nuxt/ui/dist/runtime/components/ButtonGroup.vue')['default']
+    UFileUpload: typeof import('./../../../node_modules/@nuxt/ui/dist/runtime/components/FileUpload.vue')['default']
     UForm: typeof import('./../../../node_modules/@nuxt/ui/dist/runtime/components/Form.vue')['default']
     UInput: typeof import('./../../../node_modules/@nuxt/ui/dist/runtime/components/Input.vue')['default']
     UProgress: typeof import('./../../../node_modules/@nuxt/ui/dist/runtime/components/Progress.vue')['default']

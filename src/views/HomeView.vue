@@ -5,26 +5,17 @@
     import _ from 'lodash';
     import { storeToRefs } from 'pinia';
     import { SplitterGroup, SplitterPanel, SplitterResizeHandle } from 'reka-ui'
-    import { onMounted, reactive, ref, toRaw, watch } from 'vue';
-    import CodeMirror from 'vue-codemirror6';
-    import { json } from "@codemirror/lang-json";
-    import { oneDark } from '@codemirror/theme-one-dark'
+    import { onMounted, reactive, toRaw, watch } from 'vue';
     import axios, { AxiosError } from 'axios';
-    import { HttpOpts } from '@/utils/types';
+    import { Icon } from '@iconify/vue';
 
     const homeStore = useHomeStore();
-    const { url: storeUrl } = storeToRefs(homeStore)
+    const { url: storeUrl, response } = storeToRefs(homeStore)
 
     const id = "home__panel"
     const formState = reactive({
     });
 
-    const response = ref<{
-        status: number;
-        duration: number;
-        size: number;
-        headers: HttpOpts;
-    }>(null);
 
     const win = window;
     const resTabs = [{ label: 'Response' }, { label: 'Headers' }];
@@ -48,11 +39,11 @@
 
     const onSubmit = async (e) => {
         const t1 = Date.now();
+
         try {
             axiosAbortCtrl = new AbortController();
             e.preventDefault();
             homeStore.response = null;
-            response.value = null;
             // await sleep(3000);
             const res = await axios.request({
                 url: homeStore.url,
@@ -62,46 +53,53 @@
                 data:
                     homeStore.method == "GET"
                         ? null
-                        : Object.fromEntries(homeStore.body),
+                        : JSON.parse(homeStore.body),
                 signal: axiosAbortCtrl.signal
             });
             let elapsed = Date.now() - t1;
-            homeStore.response = res.data;
-            response.value = {
-                status: res.status,
-                duration: elapsed,
-                size: Number(res.headers["content-length"]) / 1024,
-                headers: Object.entries(res.headers),
-            }
+            homeStore.response = {
+                data: res.data, config: {
+                    status: res.status,
+                    duration: elapsed,
+                    size: Number(res.headers["content-length"]) / 1024,
+                    headers: Object.entries(res.headers),
+                }
+            };
         } catch (err) {
             const duration = Date.now() - t1;
-            console.log(err);
+            console.log("Failed to send req:", err);
             let msg: any = { message: "Failed to send request." };
             let status = 500;
             let size = 0;
             let headers = [];
 
             if (axios.isCancel(err)) {
-                console.log("Request canceled");
                 msg = "Request canceled!";
             } else if (axios.isAxiosError(err)) {
                 let _err = err as AxiosError;
                 msg = _err.response?.data || _err.message;
                 status = _err.status || status;
                 size = Number(_err.config?.headers["content-length"] || 0);
-                headers = Object.entries(_err.response?.headers) || []
+                headers = Object.entries(_err.response?.headers || {}) || []
             }
-            response.value = { status, duration, size, headers };
-            homeStore.response = msg;
+
+            homeStore.response = {
+                data: msg, config: {
+                    status,
+                    duration,
+                    size,
+                    headers,
+                }
+            }
         }
     };
 
     onMounted(() => {
         loadState();
-        window.electronAPI.onShowEditorCtxMenu((e, act, target) => {
+        window.electronAPI.onShowEditorCtxMenu((_, act, target) => {
             switch (act) {
                 case "clear":
-                    if (target == "editor") homeStore.response = "";
+                    if (target == "editor") homeStore.response = null;
                     else if (target == "input") homeStore.url = "";
                     break;
             }
@@ -133,7 +131,11 @@
     })
 
     watch(() => homeStore, (state) => {
-        const _state: typeof state.$state = { ...state.$state, params: [], response: "", parsedResp: "" };
+        const _state: typeof state.$state = { ...state.$state };
+        delete _state.params;
+        delete _state.response;
+        delete _state.parsedResp;
+        delete _state.file;
 
         localStorage.setItem(
             STORAGE_KEY,
@@ -170,7 +172,7 @@
                         :items="[{ label: 'Params' }, { label: 'Body' }, { label: 'Headers' }]">
 
                         <template #content="{ item: tab }">
-                            <CodeMirror basic v-if="tab.label.toLowerCase() == 'body'" />
+                            <HomeBodyTab v-if="tab.label.toLowerCase() == 'body'" />
                             <HomeTab v-else :k="tab.label.toLowerCase() as any" />
                         </template>
                     </UTabs>
@@ -182,19 +184,19 @@
             </SplitterResizeHandle>
             <SplitterPanel class="px-4 relative h-full w-full p-1 rounded-md flex flex-col overflow-y-hidden">
 
-                <div class="px-2 rounded-sm bg-elevate self-en" v-if="homeStore.response && response">
+                <div class="px-2 rounded-sm bg-elevate self-en" v-if="response.data && response.config">
                     <div>
                         <div
-                            :class='`flex gap-3 items-center flex-1 font-mono text-xs font-bold ${response.status != 200 ? "text-red-500" : "text-success"}`'>
+                            :class='`flex gap-3 items-center flex-1 font-mono text-xs font-bold ${response.config.status != 200 ? "text-red-500" : "text-success"}`'>
                             <span title="status">
-                                {{ response.status }}
+                                {{ response.config.status }}
                             </span>
-                            <span title="duration">
-                                <i class="fi fi-br-clock"></i>
-                                {{ response.duration }} ms
+                            <span title="duration" class="inline-flex gap-1">
+                                <Icon icon="lucide:clock"></Icon>
+                                {{ response.config.duration }}ms
                             </span>
                             <span title="size">
-                                {{ response.size.toFixed(3) }} kb
+                                {{ response.config.size.toFixed(3) }}kb
                             </span>
                         </div>
                     </div>
@@ -206,29 +208,29 @@
                     <template #content="{ item }">
                         <div class="p-1 bg-neutral-800/20 rounded-sm relative h-full flex flex-col max-h-full">
                             <div class="h-full flex flex-col" v-if="item.label.toLowerCase() == 'response'">
-                                <div class="w-full flex gap-2 px-2 py-1 rounded-sm bg-elevated">
-                                    <UButton size="sm" isIconOnly>
-                                        <i class="fi fi-br-copy"></i>
-                                    </UButton>
-                                    <UButton size="sm" @click="homeStore.response = ''">
-                                        <i class="fi fi-br-broom"></i>
-                                    </UButton>
+                                <div v-if="homeStore.parsedResp"
+                                    class="w-full flex gap-2 px-2 py-1 rounded-sm bg-elevated">
+                                    <UButton icon="lucide:copy" size="sm" isIconOnly/>
+                                    <UButton icon="lucide:brush-cleaning"  size="sm" @click="homeStore.response.data = ''"/>
                                 </div>
 
                                 <div @contextmenu='' class="flex-1 min-h-0 overflow-y-scroll">
-                                    <div v-if="homeStore.response == null"
+                                    <div v-if="!homeStore.response"
                                         class="w-full h-full flex-center gap-2 flex-col opacity-70">
-                                        <UProgress :ui="{ root: 'w-15' }" size="sm" color="neutral" />
-                                        <UButton @click="() => { axiosAbortCtrl.abort() }" size="sm" variant="outline"
-                                            color="warning">
-                                            Cancel request
-                                        </UButton>
+                                        <div v-if="homeStore.response == null" class="flex-center gap-2 flex-col ">
+                                            <UProgress :ui="{ root: 'w-30' }" size="sm" color="neutral" />
+                                            <UButton @click="() => { axiosAbortCtrl.abort() }" size="sm"
+                                                variant="outline" color="warning">
+                                                Cancel request
+                                            </UButton>
+                                        </div>
+                                        <p v-else class="text-md">Nothing to show</p>
                                     </div>
-                                    <TuCodMirror v-else readonly v-model="homeStore.parsedResp" />
+                                    <TuCodeMirror v-else readonly v-model="homeStore.parsedResp" />
                                 </div>
                             </div>
                             <div class="h-full" v-else-if="item.label.toLowerCase() == 'headers'">
-                                <ResTable :items="response?.headers || []" />
+                                <ResTable :items="response.config?.headers || []" />
                             </div>
 
 
@@ -239,12 +241,3 @@
         </SplitterGroup>
     </div>
 </template>
-
-<style>
-    @reference "../tw.css";
-
-    .cm-editor {
-        height: 100%;
-        @apply bg-neutral-900
-    }
-</style>

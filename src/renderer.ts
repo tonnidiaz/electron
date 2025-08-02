@@ -26,7 +26,9 @@
  * ```
  */
 import "./tw.css";
+import "./styles/main.css";
 import "./styles/main.scss";
+import "./iconify";
 import { createApp } from "vue";
 import App from "./App.vue";
 import ui from "@nuxt/ui/vue-plugin";

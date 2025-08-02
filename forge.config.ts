@@ -7,7 +7,7 @@ import fs from "node:fs";
 import path from "node:path";
 const config: ForgeConfig = {
     packagerConfig: {
-        asar: false,
+        asar: true,
         prune: true,
         executableName: "tu-rest",
         electronZipDir:
