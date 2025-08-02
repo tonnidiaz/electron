@@ -6,58 +6,60 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { readFileSync, writeFileSync } from "node:fs";
 import ts from "typescript";
-import tsConfigPaths from 'vite-tsconfig-paths'
+import tsConfigPaths from "vite-tsconfig-paths";
 process.stdout.write("\x1Bc");
 console.log("\nHello from Config\n");
 
 const libToPath = (lib: string) => {
-    let libDirname = path.dirname(import.meta.resolve(`${lib}/package.json`))
-    libDirname = fileURLToPath(new URL(libDirname))
+    let libDirname = path.dirname(import.meta.resolve(`${lib}/package.json`));
+    libDirname = fileURLToPath(new URL(libDirname));
     libDirname = path.join(libDirname, "src", "*");
-    let ret = libDirname
-    ret = path.relative(import.meta.dirname, ret)
-    return ret
-}
+    let ret = libDirname;
+    ret = path.relative(import.meta.dirname, ret);
+    return ret;
+};
 const extLibToPath = (lib: string) => {
-    let libDirname = path.dirname(import.meta.resolve(`${lib}`))
-    libDirname = fileURLToPath(new URL(libDirname))
+    let libDirname = path.dirname(import.meta.resolve(`${lib}`));
+    libDirname = fileURLToPath(new URL(libDirname));
     libDirname = path.join(libDirname, "**", "*");
-    let ret = path.relative(import.meta.dirname, libDirname)
-    return ret
-}
+    let ret = path.relative(import.meta.dirname, libDirname);
+    return ret;
+};
 
 const genAliases = () => {
-
     const refFile = "tsconfig.ref.json";
-    const saveFile = "tsconfig.app.json"
-    const res = readFileSync(refFile, { encoding: 'utf-8' })
+    const saveFile = "tsconfig.app.json";
+    const res = readFileSync(refFile, { encoding: "utf-8" });
     const config = ts.parseConfigFileTextToJson(refFile, res).config;
-    if (!config.compilerOptions.paths) { config.compilerOptions.paths = {} }
+    if (!config.compilerOptions.paths) {
+        config.compilerOptions.paths = {};
+    }
     if (!config.include) config.include = [];
 
-    let alias: any =  {};
+    let alias: any = {};
 
     // add alias to config aliases
     Object.entries(alias).forEach(([k, v]) => {
         config.compilerOptions.paths[k] = [v];
-        config.include.push(v)
+        config.include.push(v);
     });
-    alias = {}
-    for (let [k, v] of Object.entries<string>(config.compilerOptions.paths)){
-        v = v[0].replace("/*", "")
-        alias[k.replace("/*", "")] = fileURLToPath(new URL(v, import.meta.url))
+    alias = {};
+    for (let [k, v] of Object.entries<string>(config.compilerOptions.paths)) {
+        v = v[0].replace("/*", "");
+        alias[k.replace("/*", "")] = fileURLToPath(new URL(v, import.meta.url));
     }
 
     console.log({ config: config.compilerOptions.paths });
-    writeFileSync(saveFile, JSON.stringify(config, null, "    "))
-    console.log({alias})
-    return alias
-}
+    writeFileSync(saveFile, JSON.stringify(config, null, "    "));
+    console.log({ alias });
+    return alias;
+};
 
 // https://vitejs.dev/config
 export default defineConfig({
     plugins: [
-        vue(), tsConfigPaths(),
+        vue(),
+        tsConfigPaths(),
         tw(),
         ui({
             ui: {
@@ -70,4 +72,20 @@ export default defineConfig({
     ],
 
     resolve: { alias: genAliases() },
+    build: {
+        rollupOptions: {
+            output: {
+                manualChunks: {
+                    // ...
+                    codemirror: ["vue-codemirror6"],
+                    "codemirror-lang": [
+                        // Add the following as needed.
+                        "@codemirror/lang-json"
+                    ],
+                    "codemirror-theme": [ "@codemirror/theme-one-dark" ]
+                    // ...
+                },
+            },
+        },
+    },
 });
