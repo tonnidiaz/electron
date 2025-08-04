@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { testTreeItems } from '@/utils/consts';
 import { TreeItem } from '@/utils/types';
-    import { onMounted, ref } from 'vue';
+import { ref } from 'vue';
 
     const newOpts = { req: 'New HTTP request', col: 'New collection' }
     const newOpt = ref<keyof typeof newOpts>('req');
 
-    const treeItems = ref<TreeItem[]>(testTreeItems)
+    const treeItems = ref<TreeItem[]>(testTreeItems);
 
     const createNewCollection = () => {
         const what = newOpt.value;
@@ -16,8 +16,6 @@ import { TreeItem } from '@/utils/types';
         treeItems.value.push(treeItem)
     }
 
-    onMounted(() => {
-    })
 </script>
 
 <template>

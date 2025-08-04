@@ -11,17 +11,18 @@ export type PublicCodeMirrorProps = Omit<
 >;
 
 export type TableSelection = { [k: number]: boolean };
-export type Collection = {
+export type ColRequest = {
     name: string;
-    url?: StorageManager;
+    treeItemId: string;
+    url?: string;
     method?: string;
     params?: HttpOpts;
     headers?: HttpOpts;
     body?: string;
     selected?: TableSelection;
-    children?: number[]
 };
 export type TreeItem = {
+    id?: string,
     label?: string;
     prefix?: string;
     open?: boolean; editable?: boolean, active?: boolean; children?: TreeItem[]
