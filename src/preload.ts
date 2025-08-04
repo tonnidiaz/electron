@@ -2,6 +2,7 @@
 // https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
 
 import { contextBridge, ipcRenderer, IpcRendererEvent } from "electron";
+import { Greeting } from "tu-rest-rs";
 
 export const electronAPI = {
     sayHello: (msg: string) => {
@@ -16,6 +17,9 @@ export const electronAPI = {
     onHello: (cb: (ev: Electron.IpcRendererEvent, msg: string) => void) => {
         ipcRenderer.on("hello", cb);
     },
+    async sayHiRust(name: string) : Promise<Greeting> {
+        return await ipcRenderer.invoke("greeting", name)
+    }
 };
 
 contextBridge.exposeInMainWorld("electronAPI", electronAPI);

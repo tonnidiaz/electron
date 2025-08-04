@@ -7,6 +7,10 @@ export default defineConfig({
             output: {
                 entryFileNames: `main.cjs`,
             },
+            external: ["tu-rest-rs"], // don't inline rs
         },
+    },
+    optimizeDeps: {
+        exclude: ["tu-rest-rs"],
     },
 });

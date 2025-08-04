@@ -31,7 +31,8 @@ const config: ForgeConfig = {
             /.vscode/,
             /out/, /dist/, /docs/,
             /config.*.json$/,
-            /src/
+            /src/,
+            /backend/
         ],
     },
     hooks: {

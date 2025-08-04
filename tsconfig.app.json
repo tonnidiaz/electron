@@ -8,7 +8,8 @@
         "preload.d.ts"
     ],
     "exclude": [
-        "src/**/__tests__/*"
+        "src/**/__tests__/*",
+        "backend/**/*"
     ],
     "compilerOptions": {
         "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
@@ -38,6 +39,12 @@
         "paths": {
             "@/*": [
                 "./src/*"
+            ],
+            "tu-rest-rs": [
+                "backend/rs/lib/index.d.cts"
+            ],
+            "tu-rest-rs/*": [
+                "backend/rs/lib/*"
             ]
         }
     }

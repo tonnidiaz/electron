@@ -9,6 +9,8 @@ import {
 } from "electron";
 import { join } from "node:path";
 import started from "electron-squirrel-startup";
+import { greeting } from "tu-rest-rs";
+import { sleep } from "./utils/funcs";
 declare const MAIN_WINDOW_VITE_DEV_SERVER_URL: string;
 declare const MAIN_WINDOW_VITE_NAME: string;
 
@@ -102,10 +104,7 @@ const createWindow = () => {
         mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL);
     } else {
         mainWindow.loadFile(
-            join(
-                __dirname,
-                `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`
-            )
+            join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`)
         );
     }
     mainWindow.once("ready-to-show", () => {
@@ -192,4 +191,13 @@ ipcMain.on("showEditorCtxMenu", (event, target) => {
     ];
     const menu = Menu.buildFromTemplate(temp);
     menu.popup({ window: BrowserWindow.fromWebContents(event.sender) });
+});
+
+ipcMain.handle("greeting", async (_, name) => {
+    try {
+        const res = greeting(name);
+        return res;
+    } catch (e) {
+        throw e;
+    }
 });
