@@ -20,7 +20,7 @@
         <template #file>
             <div class="m-auto">
                 <UFileUpload variant="area" layout="list" position="inside" multiple class="w-80 m-auto "
-                    icon="lucide:upload" label="Upload files" dropzone v-model="homeStore.file" />
+                    icon="i-tabler-upload" label="Upload files" dropzone v-model="homeStore.file" />
             </div>
         </template>
     </UTabs>

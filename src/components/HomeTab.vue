@@ -52,7 +52,7 @@
                     size: 'xs',
                     variant: 'ghost',
                     color: 'error',
-                    icon: 'lucide:trash-2',
+                    icon: 'i-tabler-trash-2',
                     tabIndex: -1,
                     onClick: () => {
                         homeStore[props.k].splice(row.index, 1)

@@ -5,7 +5,7 @@
     import _ from 'lodash';
     import { storeToRefs } from 'pinia';
     import { SplitterGroup, SplitterPanel, SplitterResizeHandle } from 'reka-ui'
-    import { computed, onMounted, reactive, ref, toRaw, watch } from 'vue';
+    import { computed, onMounted, reactive, toRaw, watch } from 'vue';
     import axios, { AxiosError } from 'axios';
     import { Icon } from '@iconify/vue';
 
@@ -97,7 +97,7 @@
 
     onMounted(() => {
         loadState();
-        window.electronAPI.onShowEditorCtxMenu((_, act, target) => {
+        window.electronAPI?.onShowEditorCtxMenu((_, act, target) => {
             switch (act) {
                 case "clear":
                     if (target == "editor") homeStore.response.data = null;
@@ -171,7 +171,7 @@
                                 </UInput>
                             </UButtonGroup>
                         </UForm>
-                        <UTabs variant="link" color="neutral" class="w-full"
+                        <UTabs variant="link" color="neutral" class="w-full" model-value="1"
                             :items="[{ label: 'Params' }, { label: 'Body' }, { label: 'Headers' }]">
 
                             <template #content="{ item: tab }">
@@ -195,7 +195,7 @@
                                     {{ response.config.status }}
                                 </span>
                                 <span title="duration" class="inline-flex gap-1">
-                                    <Icon icon="lucide:clock"></Icon>
+                                    <Icon icon="i-tabler-clock"></Icon>
                                     {{ response.config.duration }}ms
                                 </span>
                                 <span title="size">
@@ -213,8 +213,8 @@
                                 <div class="h-full flex flex-col" v-if="item.label.toLowerCase() == 'response'">
                                     <div v-if="homeStore.parsedResp"
                                         class="w-full flex gap-2 px-2 py-1 rounded-sm bg-elevated">
-                                        <UButton icon="lucide:copy" size="sm" isIconOnly />
-                                        <UButton icon="lucide:brush-cleaning" size="sm"
+                                        <UButton icon="i-tabler-copy" size="sm" isIconOnly />
+                                        <UButton icon="i-tabler-brush-cleaning" size="sm"
                                             @click="homeStore.response.data = ''" />
                                     </div>
 

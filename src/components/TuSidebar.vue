@@ -1,32 +1,34 @@
 <script setup lang="ts">
-    import { TabsItem, type NavigationMenuItem } from '@nuxt/ui';
+import { TabsItem } from '@nuxt/ui';
     import { ref, watch } from 'vue';
 
     const collapsed = ref(true);
     const c = ref(false);
+
     function toggleCollapse() {
         collapsed.value = !collapsed.value
     }
     const currTab = ref(0)
     const items = ref<TabsItem[]>([
-        { icon: 'lucide:files', slot: 'files' },
-        { icon: 'lucide:users', slot: 'users' },
-        { icon: 'lucide:info' },
-        { icon: 'lucide:settings' },
+        { icon: 'i-tabler-files', slot: 'files' },
+        { icon: 'i-tabler-users', slot: 'users' },
+        { icon: 'i-tabler-info-circle' },
+        { icon: 'i-tabler-settings' },
     ]);
+ 
 
     watch(currTab, () => {
         collapsed.value = false;
         c.value = false
     })
+
 </script>
 <template>
-    <UTabs v-model="currTab" :content="!collapsed" orientation="vertical" class="bg-elevated/40 items-start pt-3"
-        :ui="{ content: 'pr-2' }" variant="link" :items="items">
+    <UTabs v-model="currTab" :content="!collapsed" orientation="vertical" class="bg-elevated/40 items-start pt-"
+        :ui="{ content: 'pr-2 pt-3', trigger: 'px-1' }" variant="link" :items="items">
         <template #leading="{ item, index }">
             <div class="">
                 <UButton @click="() => {
-                    // console.log({ index, currTab, collapsed })
                     if (c) { toggleCollapse() }
                     else { c = true }
                 }
@@ -35,15 +37,7 @@
         </template>
 
         <template #files>
-            <UTree :items="[{
-                label: 'app', defaultExpanded: true,
-                click: () => { toggleCollapse() },
-                children: [
-                    {
-                        label: 'index.html', icon: 'lucide:file'
-                    }
-                ]
-            }]" />
+            <WorkspaceTab/>
         </template>
         <template #users>
             <div class="w-40"></div>

@@ -8,7 +8,7 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
-    copy: typeof import('./src/components/HomeTabField copy.vue')['default']
+    copy: typeof import('./src/components/TuTreeItem copy.vue')['default']
     HomeBodyTab: typeof import('./src/components/HomeBodyTab.vue')['default']
     HomeTab: typeof import('./src/components/HomeTab.vue')['default']
     HomeTabField: typeof import('./src/components/HomeTabField.vue')['default']
@@ -20,9 +20,16 @@ declare module 'vue' {
     TuCodeMirror: typeof import('./src/components/TuCodeMirror.vue')['default']
     TuPanel: typeof import('./src/components/TuPanel.vue')['default']
     TuSidebar: typeof import('./src/components/TuSidebar.vue')['default']
+    TuSubTree: typeof import('./src/components/TuSubTree.vue')['default']
+    TuTree: typeof import('./src/components/TuTree.vue')['default']
+    'TuTree copy': typeof import('./src/components/TuTree copy.vue')['default']
+    TuTreeItem: typeof import('./src/components/TuTreeItem.vue')['default']
+    'TuTreeItem copy': typeof import('./src/components/TuTreeItem copy.vue')['default']
     UBadge: typeof import('./../../../node_modules/@nuxt/ui/dist/runtime/components/Badge.vue')['default']
     UButton: typeof import('./../../../node_modules/@nuxt/ui/dist/runtime/components/Button.vue')['default']
     UButtonGroup: typeof import('./../../../node_modules/@nuxt/ui/dist/runtime/components/ButtonGroup.vue')['default']
+    UContextMenu: typeof import('./../../../node_modules/@nuxt/ui/dist/runtime/components/ContextMenu.vue')['default']
+    UDropdownMenu: typeof import('./../../../node_modules/@nuxt/ui/dist/runtime/components/DropdownMenu.vue')['default']
     UFileUpload: typeof import('./../../../node_modules/@nuxt/ui/dist/runtime/components/FileUpload.vue')['default']
     UForm: typeof import('./../../../node_modules/@nuxt/ui/dist/runtime/components/Form.vue')['default']
     UInput: typeof import('./../../../node_modules/@nuxt/ui/dist/runtime/components/Input.vue')['default']
@@ -32,6 +39,6 @@ declare module 'vue' {
     USeparator: typeof import('./../../../node_modules/@nuxt/ui/dist/runtime/components/Separator.vue')['default']
     UTable: typeof import('./../../../node_modules/@nuxt/ui/dist/runtime/components/Table.vue')['default']
     UTabs: typeof import('./../../../node_modules/@nuxt/ui/dist/runtime/components/Tabs.vue')['default']
-    UTree: typeof import('./../../../node_modules/@nuxt/ui/dist/runtime/components/Tree.vue')['default']
+    WorkspaceTab: typeof import('./src/components/sidebar/WorkspaceTab.vue')['default']
   }
 }

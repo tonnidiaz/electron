@@ -54,13 +54,11 @@ const config: ForgeConfig = {
                     (f.startsWith("locales/") &&
                         !["locales/en-US.pak"].includes(f))
                 ) {
-                    console.log({ f });
-                    console.log("Deleting...\n");
+
                     fs.rmSync(fullPath, { recursive: true, force: true });
                     dir = dir.filter((el) => el != f);
                 }
             }
-            // console.log("\n", { dir });
         },
     },
     rebuildConfig: {},

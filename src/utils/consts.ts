@@ -9,3 +9,25 @@ export const typeMap = {
     object: "file",
     function: "hidden"
   };
+
+  export const testTreeItems = [
+    {
+        label: 'app', children: [
+            { label: 'home.tsx' },
+            { label: 'about.tsx' },
+            { label: 'contact.tsx' },
+        ]
+    },
+
+    { label: 'index.ts' },
+    { label: 'package.json.ts' },
+    { label: 'java.c' },
+    
+    {
+        label: 'romponents', children: [
+            { label: 'comp-home.tsx' },
+            { label: 'comp-about.tsx' },
+            { label: 'comp-contact.tsx' },
+        ]
+    },
+]

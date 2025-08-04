@@ -25,8 +25,6 @@
         "@electron-forge/plugin-vite": "^7.8.1",
         "@electron-forge/shared-types": "^7.8.1",
         "@electron/fuses": "^1.8.0",
-        "@iconify-json/lucide": "^1.2.58",
-        "@iconify-json/simple-icons": "^1.2.44",
         "@iconify/vue": "^5.0.0",
         "@nuxt/icon": "^1.15.0",
         "@nuxt/ui": "^3.2.0",
@@ -43,6 +41,7 @@
     },
     "dependencies": {
         "@codemirror/lang-json": "npm:^6.0.2",
+        "@iconify-json/tabler": "^1.2.20",
         "axios": "1.11.0",
         "codemirror": "npm:^6.0.0",
         "electron-squirrel-startup": "^1.0.1",

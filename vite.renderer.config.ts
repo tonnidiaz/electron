@@ -67,6 +67,28 @@ export default defineConfig({
                     primary: "teal",
                     neutral: "zinc",
                 },
+                icons: {
+                    arrowLeft: 'i-tabler-arrow-left',
+                    arrowRight: 'i-tabler-arrow-right',
+                    check: 'i-tabler-check',
+                    chevronDoubleLeft: 'i-tabler-chevrons-left',
+                    chevronDoubleRight: 'i-tabler-chevrons-right',
+                    chevronDown: 'i-tabler-chevron-down',
+                    chevronLeft: 'i-tabler-chevron-left',
+                    chevronRight: 'i-tabler-chevron-right',
+                    chevronUp: 'i-tabler-chevron-up',
+                    close: 'i-tabler-x',
+                    ellipsis: 'i-tabler-dots',
+                    external: 'i-tabler-arrow-up-right',
+                    file: 'i-tabler-file',
+                    folder: 'i-tabler-folder',
+                    folderOpen: 'i-tabler-folder-open',
+                    loading: 'i-tabler-loader-2',
+                    minus: 'i-tabler-minus',
+                    plus: 'i-tabler-plus',
+                    search: 'i-tabler-search',
+                    upload: 'i-tabler-upload'
+                  } /* */
             },
         }) as any,
     ],
@@ -82,7 +104,12 @@ export default defineConfig({
                         // Add the following as needed.
                         "@codemirror/lang-json"
                     ],
-                    "codemirror-theme": [ "@codemirror/theme-one-dark" ]
+                    "codemirror-theme": [ "@codemirror/theme-one-dark" ],
+                    iconify: ["@iconify/vue"],
+                    "iconify-json": [
+                        // '@iconify-json/lucide',
+                        '@iconify-json/tabler',
+                    ]
                     // ...
                 },
             },

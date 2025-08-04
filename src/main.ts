@@ -4,12 +4,17 @@ import {
     ipcMain,
     Menu,
     MenuItem,
+    nativeTheme,
     protocol,
 } from "electron";
-import path from "node:path";
+import { join } from "node:path";
 import started from "electron-squirrel-startup";
 declare const MAIN_WINDOW_VITE_DEV_SERVER_URL: string;
 declare const MAIN_WINDOW_VITE_NAME: string;
+
+app.disableHardwareAcceleration();
+app.commandLine.appendSwitch("disable-gpu");
+
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (started) {
     app.quit();
@@ -32,7 +37,7 @@ const template = [
             { role: "selectAll" },
             { role: "copy" },
             { role: "cut" },
-        ]
+        ],
     },
 
     {
@@ -75,7 +80,7 @@ protocol.registerSchemesAsPrivileged([
 ]);
 
 let mainWindow: BrowserWindow | undefined;
-
+nativeTheme.themeSource = "dark";
 const createWindow = () => {
     // Create the browser window.
     mainWindow = new BrowserWindow({
@@ -85,24 +90,32 @@ const createWindow = () => {
         title: "Turest",
         // titleBarStyle: "hidden",
         thickFrame: true,
+        darkTheme: true,
         webPreferences: {
-            preload: path.join(__dirname, "preload.js"),
+            preload: join(__dirname, "preload.js"),
         },
     });
-
+    console.time("did-load");
     // and load the index.html of the app.
     if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
         console.log("\n", { MAIN_WINDOW_VITE_DEV_SERVER_URL }, "\n");
         mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL);
     } else {
         mainWindow.loadFile(
-            path.join(
+            join(
                 __dirname,
                 `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`
             )
         );
     }
-    if (!app.isPackaged) {
+    mainWindow.once("ready-to-show", () => {
+        console.timeEnd("window-create");
+    });
+    mainWindow.webContents.once("did-finish-load", () => {
+        console.timeEnd("did-load");
+    });
+    if (!app.isPackaged || true) {
+        // TODO remove
         // Open the DevTools.
         mainWindow.webContents.openDevTools();
     }
@@ -111,7 +124,9 @@ const createWindow = () => {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
+console.time("app-ready");
 app.on("ready", () => {
+    console.timeEnd("app-ready");
     protocol.registerFileProtocol("localvideo", (request, callback) => {
         const filePath = decodeURIComponent(
             request.url.replace("localvideo://", "")
@@ -123,6 +138,8 @@ app.on("ready", () => {
         console.log("\n[main:hello]", msg);
         _e.reply("hello", "Hi! This is main!");
     });
+
+    console.time("window-create");
     createWindow();
 });
 
