@@ -7,10 +7,12 @@ import {
     nativeTheme,
     protocol,
 } from "electron";
+
 import { join } from "node:path";
 import started from "electron-squirrel-startup";
-import { greeting } from "tu-rest-rs";
-import { sleep } from "./utils/funcs";
+import { sayHiTulib } from "tulib";
+const napp = require(join(__dirname, "..", "..", "rs", "index.node"));
+
 declare const MAIN_WINDOW_VITE_DEV_SERVER_URL: string;
 declare const MAIN_WINDOW_VITE_NAME: string;
 
@@ -138,6 +140,15 @@ app.on("ready", () => {
         _e.reply("hello", "Hi! This is main!");
     });
 
+    ipcMain.handle("greeting", async (_, name) => {
+        try {
+            console.log(sayHiTulib(name))
+            const res = napp.hello(name);
+            return res;
+        } catch (e) {
+            throw e;
+        }
+    });
     console.time("window-create");
     createWindow();
 });
@@ -193,11 +204,4 @@ ipcMain.on("showEditorCtxMenu", (event, target) => {
     menu.popup({ window: BrowserWindow.fromWebContents(event.sender) });
 });
 
-ipcMain.handle("greeting", async (_, name) => {
-    try {
-        const res = greeting(name);
-        return res;
-    } catch (e) {
-        throw e;
-    }
-});
+

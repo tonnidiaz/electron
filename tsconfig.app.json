@@ -39,12 +39,6 @@
         "paths": {
             "@/*": [
                 "./src/*"
-            ],
-            "tu-rest-rs": [
-                "backend/rs/lib/index.d.cts"
-            ],
-            "tu-rest-rs/*": [
-                "backend/rs/lib/*"
             ]
         }
     }

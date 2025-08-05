@@ -1,7 +1,0 @@
-{
-  "name": "tu-rest-rs",
-  "packageManager": "yarn@4.9.2",
-  "dependencies": {
-    "axios": "npm:1.11.0"
-  }
-}

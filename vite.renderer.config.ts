@@ -17,7 +17,7 @@ const libToPath = (lib: string) => {
     let ret = libDirname;
     ret = path.relative(import.meta.dirname, ret);
     return ret;
-};
+}; 
 const extLibToPath = (lib: string) => {
     let libDirname = path.dirname(import.meta.resolve(`${lib}`));
     libDirname = fileURLToPath(new URL(libDirname));
@@ -68,27 +68,27 @@ export default defineConfig({
                     neutral: "zinc",
                 },
                 icons: {
-                    arrowLeft: "i-tabler-arrow-left",
-                    arrowRight: "i-tabler-arrow-right",
-                    check: "i-tabler-check",
-                    chevronDoubleLeft: "i-tabler-chevrons-left",
-                    chevronDoubleRight: "i-tabler-chevrons-right",
-                    chevronDown: "i-tabler-chevron-down",
-                    chevronLeft: "i-tabler-chevron-left",
-                    chevronRight: "i-tabler-chevron-right",
-                    chevronUp: "i-tabler-chevron-up",
-                    close: "i-tabler-x",
-                    ellipsis: "i-tabler-dots",
-                    external: "i-tabler-arrow-up-right",
-                    file: "i-tabler-file",
-                    folder: "i-tabler-folder",
-                    folderOpen: "i-tabler-folder-open",
-                    loading: "i-tabler-loader-2",
-                    minus: "i-tabler-minus",
-                    plus: "i-tabler-plus",
-                    search: "i-tabler-search",
-                    upload: "i-tabler-upload",
-                } /* */,
+                    arrowLeft: 'i-tabler-arrow-left',
+                    arrowRight: 'i-tabler-arrow-right',
+                    check: 'i-tabler-check',
+                    chevronDoubleLeft: 'i-tabler-chevrons-left',
+                    chevronDoubleRight: 'i-tabler-chevrons-right',
+                    chevronDown: 'i-tabler-chevron-down',
+                    chevronLeft: 'i-tabler-chevron-left',
+                    chevronRight: 'i-tabler-chevron-right',
+                    chevronUp: 'i-tabler-chevron-up',
+                    close: 'i-tabler-x',
+                    ellipsis: 'i-tabler-dots',
+                    external: 'i-tabler-arrow-up-right',
+                    file: 'i-tabler-file',
+                    folder: 'i-tabler-folder',
+                    folderOpen: 'i-tabler-folder-open',
+                    loading: 'i-tabler-loader-2',
+                    minus: 'i-tabler-minus',
+                    plus: 'i-tabler-plus',
+                    search: 'i-tabler-search',
+                    upload: 'i-tabler-upload'
+                  } /* */
             },
         }) as any,
     ],
@@ -102,21 +102,18 @@ export default defineConfig({
                     codemirror: ["vue-codemirror6"],
                     "codemirror-lang": [
                         // Add the following as needed.
-                        "@codemirror/lang-json",
+                        "@codemirror/lang-json"
                     ],
-                    "codemirror-theme": ["@codemirror/theme-one-dark"],
+                    "codemirror-theme": [ "@codemirror/theme-one-dark" ],
                     iconify: ["@iconify/vue"],
                     "iconify-json": [
                         // '@iconify-json/lucide',
-                        "@iconify-json/tabler",
-                    ],
+                        '@iconify-json/tabler',
+                    ]
                     // ...
                 },
             },
-            external: ["tu-rest-rs"], // don't inline rs
         },
     },
-    optimizeDeps: {
-        exclude: ["tu-rest-rs"],
-    },
+    
 });

@@ -3,12 +3,14 @@ import { MakerDeb } from "@electron-forge/maker-deb";
 import { VitePlugin } from "@electron-forge/plugin-vite";
 import { FusesPlugin } from "@electron-forge/plugin-fuses";
 import { FuseV1Options, FuseVersion } from "@electron/fuses";
+// import { AutoUnpackNativesPlugin } from "@electron-forge/plugin-auto-unpack-natives"
+
 import fs from "node:fs";
 import path from "node:path";
 const config: ForgeConfig = {
     packagerConfig: {
         asar: true,
-        prune: true,
+        prune: false,
         executableName: "tu-rest",
         electronZipDir:
             "/home/tonni/.cache/electron/2e41b68bb1be932044d1e1107e42ec735f070034a10acc1266011aee23d40a4c/",
@@ -29,11 +31,28 @@ const config: ForgeConfig = {
             /d3dcompiler_47\.dll$/,
             /node_modules/,
             /.vscode/,
-            /out/, /dist/, /docs/,
+            /out/,
+            /dist/,
+            /docs/,
             /config.*.json$/,
             /src/,
-            /backend/
+            /platforms/,
+            /target/,
+            /Cargo/,
+            /cargo/,
+            /crates/,
+            /scripts/,
+            'libs/',
+            'apps/',
+            'forge.config.js',
+            'package-lock.json',
+            'yarn.lock',
+            'README.md',
+            ".github",
+
         ],
+        // electronRebuildConfig: {},
+        // extraResource: ['./'],
     },
     hooks: {
         packageAfterExtract: async (
@@ -55,14 +74,15 @@ const config: ForgeConfig = {
                     (f.startsWith("locales/") &&
                         !["locales/en-US.pak"].includes(f))
                 ) {
-
                     fs.rmSync(fullPath, { recursive: true, force: true });
                     dir = dir.filter((el) => el != f);
                 }
             }
         },
     },
-    rebuildConfig: {},
+    rebuildConfig: {
+        
+    },
     makers: [new MakerDeb({})],
     plugins: [
         new VitePlugin({
@@ -99,6 +119,8 @@ const config: ForgeConfig = {
             [FuseV1Options.EnableEmbeddedAsarIntegrityValidation]: true,
             [FuseV1Options.OnlyLoadAppFromAsar]: true,
         }),
+
+        // new AutoUnpackNativesPlugin({})
     ],
 };
 
