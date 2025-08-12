@@ -1,21 +1,24 @@
-import { defineConfig } from "vite";
+import { defineConfig } from 'vite';
+import { viteStaticCopy } from 'vite-plugin-static-copy';
+
 // https://vitejs.dev/config
 export default defineConfig({
     build: {
-       rollupOptions:{
-        output:{
-            entryFileNames: 'main.cjs'
+        rollupOptions:{
+         output:{
+             entryFileNames: 'main.cjs'
+         },
+         
         }
-       }
-    },
-    optimizeDeps:{
-        include: ["tulib"],
-    },
+     },
     plugins: [
-      
+        viteStaticCopy({
+            targets: [
+                { src: "rs/lib/*.node", dest: "." }
+            ]
+        })
     ],
-    resolve: {
-        preserveSymlinks: true,
-        extensions: [".js", "cjs", "mjs", ".ts", ".jsx", ".tsx", ".css", ".json", ".node"],
-    },
+    resolve:{
+        preserveSymlinks: true
+    }
 });

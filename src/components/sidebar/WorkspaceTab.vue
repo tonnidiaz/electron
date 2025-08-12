@@ -1,49 +1,103 @@
 <script setup lang="ts">
-import { testTreeItems } from '@/utils/consts';
-    import { TreeItem } from '@/utils/types';
+    import { useWorkspaceStore } from '@/stores/workspace';
+    import { it } from 'node:test';
+    import { storeToRefs } from 'pinia';
     import { onMounted, ref } from 'vue';
 
-    const newOpts = { req: 'New HTTP request', col: 'New collection' }
-    const newOpt = ref<keyof typeof newOpts>('req');
+    const _newWorkspace = 'New workspace';
+    const newWorkspace = ref(_newWorkspace);
+    const newWorkspaceModalOpen = ref(false);
+    const store = useWorkspaceStore();
 
-    const treeItems = ref<TreeItem[]>(testTreeItems)
+    const { workspaces: fileTrees } = storeToRefs(store)
 
-    const ddOpts = Object.entries(newOpts).map(([k, v]) => ({ label: v, onSelect() { newOpt.value = k as any; createNewCollection() } }))
+    const win = window;
 
-    const createNewCollection = () => {
-        const what = newOpt.value;
-        const treeItem: TreeItem = { label: what == 'req' ? 'New request' : 'New collection', editable: true, active: true }
-        if (what == 'col') treeItem.children = [];
-        treeItems.value.push(treeItem)
+    const ddOpts = [
+        {
+            label: "New workspace",
+            async onSelect() {
+                newWorkspaceModalOpen.value = true;
+            }
+        }
+    ]
+    const fetchFileTree = async () => {
+        try {
+            const trees = await window.electronAPI.invoke("fetchTrees");
+            console.log({ trees })
+            store.workspaces = trees;
+        } catch (err) {
+            console.log(err)
+
+        }
+    }
+
+    const createNewWorkspace = async (e: any) => {
+        e.preventDefault();
+        try {
+            const r = await window.electronAPI.invoke('createTree', newWorkspace.value);
+            store.workspaces.push(r);
+            newWorkspaceModalOpen.value = false
+        } catch (err) {
+            console.log(err)
+        }
     }
 
     onMounted(() => {
-    })
+        fetchFileTree()
+    });
+
+    /* watch(fileTrees, (items) => {
+        if (items) {
+            console.log({ items })
+            window.electronAPI.invoke('updateTree', JSON.stringify({ ...props.tree, items })).then().catch(console.log)
+        }
+
+    }, { deep: true }) */
+
 </script>
 
 <template>
-
-    <div class="mt-1">
+    <div class="mt-1 flex flex-col max-h-full">
         <div class="flex justify-between items-center gap-2 mb-1">
-            <h3 class="text-xs">WORKSPACE</h3>
+            <h3 class="text-xs">Workspaces</h3>
             <UDropdownMenu :items="ddOpts">
                 <UButton variant="soft" color="neutral" size="xs" icon="i-tabler-dots" />
             </UDropdownMenu>
         </div>
-        <div class="" v-if="!treeItems?.length">
-            <UButtonGroup class="w-full" color="primary">
-                <UButton size="xs" @click="createNewCollection" :label="newOpts[newOpt]" icon="i-tabler-plus"
-                    class="flex-1 justify-center" />
-                <UDropdownMenu class="border-l border-l-accented/40" color="primary" :items="[
-                    ...ddOpts
-                ]">
-                    <UButton size="xs" icon="i-tabler-chevron-down" color="primary" />
-                </UDropdownMenu>
-            </UButtonGroup>
-        </div>
-        <TuTree file-icon="i-tabler-http-get" v-else :ui="{ prefix: 'font-extrabold' }" new-file-label="New HTTP request"
-            new-folder-label="New collection" new-file-name="HTTP request" new-folder-name="New collection"
-            :items="treeItems" />
-    </div>
+        <div class="flex-grow">
+            <TuTree v-for="tree of fileTrees" :tree="tree" @item-open="async (it) => {
 
+                try {
+                    const res = it.contentId ?
+                        await win.electronAPI.invoke('getTreeItemContent', it.contentId) :
+                        await win.electronAPI.invoke('createTreeItemContent');
+
+                    it.contentId = res.id;
+                    store.content = { ...it.content, parsedResp: '' }
+                }
+                catch (err) {
+                    console.log(err)
+                }
+
+            }" />
+        </div>
+
+        <!-- New workspace modal -->
+        <UModal :title="`New workspace`" v-model:open="newWorkspaceModalOpen" @update:open="o => {
+            if (!o) { newWorkspace = _newWorkspace }
+        }">
+            <template #body>
+                <UForm :state="{ newWorkspace }" @submit="createNewWorkspace">
+                    <UInput autofocus aria-selected placeholder="Workspace name..." class="w-full" required
+                        v-model="newWorkspace" />
+                    <div class="flex gap-2 mt-2 justify-end">
+                        <UButton label="Cancel" size="sm" color="neutral" @click="newWorkspaceModalOpen = false"
+                            type="button" />
+                        <UButton label="Ok" size="sm" type="submit" />
+                    </div>
+                </UForm>
+            </template>
+        </UModal>
+    </div>
 </template>

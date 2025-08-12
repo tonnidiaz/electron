@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 import { readFileSync, writeFileSync } from "node:fs";
 import ts from "typescript";
 import tsConfigPaths from "vite-tsconfig-paths";
-process.stdout.write("\x1Bc");
+// process.stdout.write("\x1Bc");
 console.log("\nHello from Config\n");
 
 const libToPath = (lib: string) => {
@@ -26,6 +26,17 @@ const extLibToPath = (lib: string) => {
     return ret;
 };
 
+const include = [
+    "rs/bindings/*.ts"
+]
+const exclude = [
+    "node_modules",
+    "rs/lib/",
+    "rs/target/",
+    "rs/dist/",
+    "rs/test/",
+    "rs/src/",
+]
 const genAliases = () => {
     const refFile = "tsconfig.ref.json";
     const saveFile = "tsconfig.app.json";
@@ -35,6 +46,9 @@ const genAliases = () => {
         config.compilerOptions.paths = {};
     }
     if (!config.include) config.include = [];
+    if (!config.exclude) config.exclude = [];
+    config.include.push(...include)
+    config.exclude.push(...exclude)
 
     let alias: any = {};
 

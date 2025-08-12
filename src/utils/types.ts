@@ -3,6 +3,7 @@ import type CodeMirror from "vue-codemirror6";
 import type { VNodeProps, AllowedComponentProps } from "vue";
 export type Method = (typeof METHODS)[number];
 export type HttpOpts = [string, any][];
+import * as addon from "rs/lib"
 
 type RawProps = InstanceType<typeof CodeMirror>["$props"];
 export type PublicCodeMirrorProps = Omit<
@@ -21,9 +22,5 @@ export type ColRequest = {
     body?: string;
     selected?: TableSelection;
 };
-export type TreeItem = {
-    id?: string,
-    label?: string;
-    prefix?: string;
-    open?: boolean; editable?: boolean, active?: boolean; children?: TreeItem[]
-};
+export type TreeItem = addon.TreeItem & { open?: boolean; active?: boolean; content?: addon.TreeItemContent }
+export type FileTree = addon.FileTree & { items: TreeItem[]  }

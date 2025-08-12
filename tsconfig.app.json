@@ -5,11 +5,18 @@
         "src/**/*.vue",
         "auto-imports.d.ts",
         "components.d.ts",
-        "preload.d.ts"
+        "preload.d.ts",
+        "rs/bindings/*.ts"
     ],
     "exclude": [
         "src/**/__tests__/*",
-        "backend/**/*"
+        "backend/**/*",
+        "node_modules",
+        "rs/lib/",
+        "rs/target/",
+        "rs/dist/",
+        "rs/test/",
+        "rs/src/"
     ],
     "compilerOptions": {
         "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",

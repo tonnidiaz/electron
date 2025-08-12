@@ -38,6 +38,7 @@ const config: ForgeConfig = {
             /src/,
             /platforms/,
             /target/,
+            /debug/,
             /Cargo/,
             /cargo/,
             /crates/,
@@ -48,19 +49,17 @@ const config: ForgeConfig = {
             'package-lock.json',
             'yarn.lock',
             'README.md',
-            ".github",
+            /.github/,
+            /.db$/,
+            /backup/,
+            "./rs/"
 
         ],
-        // electronRebuildConfig: {},
-        // extraResource: ['./'],
     },
     hooks: {
         packageAfterExtract: async (
-            config,
-            buildPath,
-            electronVersion,
-            platform,
-            arch
+            _config,
+            buildPath
         ) => {
             let dir = fs.readdirSync(buildPath, {
                 encoding: "utf-8",
@@ -79,9 +78,6 @@ const config: ForgeConfig = {
                 }
             }
         },
-    },
-    rebuildConfig: {
-        
     },
     makers: [new MakerDeb({})],
     plugins: [

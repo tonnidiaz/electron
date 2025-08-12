@@ -8,10 +8,9 @@ import {
     protocol,
 } from "electron";
 
-import { join } from "node:path";
+import {  join } from "node:path";
 import started from "electron-squirrel-startup";
-import { sayHiTulib } from "tulib";
-const napp = require(join(__dirname, "..", "..", "rs", "index.node"));
+import { initHandlers } from "./utils/main/handlers";
 
 declare const MAIN_WINDOW_VITE_DEV_SERVER_URL: string;
 declare const MAIN_WINDOW_VITE_NAME: string;
@@ -140,15 +139,7 @@ app.on("ready", () => {
         _e.reply("hello", "Hi! This is main!");
     });
 
-    ipcMain.handle("greeting", async (_, name) => {
-        try {
-            console.log(sayHiTulib(name))
-            const res = napp.hello(name);
-            return res;
-        } catch (e) {
-            throw e;
-        }
-    });
+    initHandlers()
     console.time("window-create");
     createWindow();
 });

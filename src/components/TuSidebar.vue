@@ -25,7 +25,7 @@ import { TabsItem } from '@nuxt/ui';
 </script>
 <template>
     <UTabs v-model="currTab" :content="!collapsed" orientation="vertical" class="bg-elevated/40 items-start pt-"
-        :ui="{ content: 'pr-2 pt-3', trigger: 'px-1' }" variant="link" :items="items">
+        :ui="{ content: 'pr-2 py-3 max-h-full h-full relative', trigger: 'px-1' }" variant="link" :items="items">
         <template #leading="{ item, index }">
             <div class="">
                 <UButton @click="() => {

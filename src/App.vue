@@ -36,6 +36,10 @@ import RFView from "./views/RFView.vue";
     ];
     defineShortcuts(extractShortcuts(menuItems))
 
+    const initDb = () =>{
+        console.log('\nINIT_DB')
+        window.electronAPI.invoke('initDb', '').then(console.log).catch(console.log)
+    }
     watch(
         response,
         async ({ data: res }) => {
@@ -54,6 +58,7 @@ import RFView from "./views/RFView.vue";
         console.log(
             '👋 This message is being logged by "App.vue", included via Vite'
         );
+        initDb()
         addIconifyIcons().then(()=>{
             console.log('[icons addes]')
         })
@@ -74,8 +79,8 @@ import RFView from "./views/RFView.vue";
             <div class="h-full max-h-full flex w-full">
                 <TuSidebar />
                 <div class="flex-1 h-full max-h-full py-4">
-                    <!-- <RouterView /> -->
-                     <RFView/>
+                    <RouterView />
+                     <!-- <RFView/> -->
                 </div>
             </div>
         </main>
