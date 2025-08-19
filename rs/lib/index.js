@@ -508,13 +508,15 @@ if (!nativeBinding) {
   throw new Error(`Failed to load native binding`)
 }
 
-const { createTree, createTreeItemContent, fetchTree, fetchTrees, getTreeItemContent, hello, initDb, updateTree, updateTreeItemContent } = nativeBinding
+const { createTree, createTreeItem, createTreeItemContent, fetchTree, fetchTrees, getTreeItemContent, hello, initDb, renameTreeItem, updateTree, updateTreeItemContent } = nativeBinding
 export { createTree }
+export { createTreeItem }
 export { createTreeItemContent }
 export { fetchTree }
 export { fetchTrees }
 export { getTreeItemContent }
 export { hello }
 export { initDb }
+export { renameTreeItem }
 export { updateTree }
 export { updateTreeItemContent }

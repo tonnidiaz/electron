@@ -2,40 +2,47 @@
 /* eslint-disable */
 export declare function createTree(label: string): Promise<FileTree>
 
+export declare function createTreeItem(newItem: TreeItem): Promise<TreeItem>
+
 export declare function createTreeItemContent(): Promise<TreeItemContent>
 
-export declare function fetchTree(id: number): Promise<FileTree>
+export declare function fetchTree(id: string): Promise<FileTree>
 
 export declare function fetchTrees(): Promise<Array<FileTree>>
 
 export interface FileTree {
-  id: number
+  id: string
   label: string
   items: Array<TreeItem>
 }
 
-export declare function getTreeItemContent(id: number): Promise<TreeItemContent>
+export declare function getTreeItemContent(id: string): Promise<TreeItemContent>
 
 export declare function hello(name: string): string
 
 export declare function initDb(dbName: string): string
 
+export declare function renameTreeItem(id: string, label: string): Promise<string>
+
 export interface TreeItem {
-  contentId?: number
+  id: string
+  treeId: string
+  parentId?: string
+  contentId?: string
   label: string
+  type: string
   prefix?: string
-  children?: Array<TreeItem>
 }
 
 export interface TreeItemContent {
   name: string
-  id: number
+  id: string
   url: string
   method: string
   params: Array<[string, string]>
   headers: Array<[string, string]>
   body: string
-  selected: Record<string, boolean>
+  selected: Record<string, Record<string, boolean>>
 }
 
 export declare function updateTree(data: string): Promise<void>

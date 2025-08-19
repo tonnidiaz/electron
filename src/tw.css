@@ -1,7 +1,6 @@
 @import 'tailwindcss';
 @import '@nuxt/ui';
-/* @import "@flaticon/flaticon-uicons/css/bold/all"; */
-/* @import "@flaticon/flaticon-uicons/css/solid/all"; */
+@source "../../../../libs/filtree/src/";
 
 :root{
     color-scheme: dark;

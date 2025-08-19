@@ -27,8 +27,9 @@ export const initHandlers = () => {
 
         ipcMain.handle(ev, async function<K extends HandlerKey>(_, ...args: any[]) : Promise<HandlerReturn<K>>{
             if (_k == "initDb") {
+                const dir = app.isPackaged ? dirname(app.getPath("exe")) : __dirname + "../../../"
                 const db_path = join(
-                    dirname(app.getPath("exe")),
+                    dir,
                     ".db",
                     "sled"
                 );

@@ -6,7 +6,8 @@
         "auto-imports.d.ts",
         "components.d.ts",
         "preload.d.ts",
-        "rs/bindings/*.ts"
+        "rs/bindings/*.ts",
+        "../../../libs/filtree/src/**/*"
     ],
     "exclude": [
         "src/**/__tests__/*",
@@ -46,6 +47,9 @@
         "paths": {
             "@/*": [
                 "./src/*"
+            ],
+            "@tufiletree/*": [
+                "../../../libs/filtree/src/*"
             ]
         }
     }

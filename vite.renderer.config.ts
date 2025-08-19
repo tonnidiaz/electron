@@ -13,7 +13,7 @@ console.log("\nHello from Config\n");
 const libToPath = (lib: string) => {
     let libDirname = path.dirname(import.meta.resolve(`${lib}/package.json`));
     libDirname = fileURLToPath(new URL(libDirname));
-    libDirname = path.join(libDirname, "src", "*");
+    libDirname = path.join(libDirname, "src", "**", "*");
     let ret = libDirname;
     ret = path.relative(import.meta.dirname, ret);
     return ret;
@@ -50,11 +50,13 @@ const genAliases = () => {
     config.include.push(...include)
     config.exclude.push(...exclude)
 
-    let alias: any = {};
+    let alias: {[k: string]: string} = {
+        '@tufiletree/*': libToPath("tu-filetree")
+    };
 
     // add alias to config aliases
     Object.entries(alias).forEach(([k, v]) => {
-        config.compilerOptions.paths[k] = [v];
+        config.compilerOptions.paths[k] = [v.replace("**/*", "*")];
         config.include.push(v);
     });
     alias = {};
@@ -108,11 +110,17 @@ export default defineConfig({
     ],
 
     resolve: { alias: genAliases() },
+    server: {
+        watch: {
+          ignored: ['**/.db/**', "**/rs/**"],
+        },
+      },
     build: {
         rollupOptions: {
             output: {
                 manualChunks: {
                     // ...
+                    "tu-filetree": ["tu-filetree"],
                     codemirror: ["vue-codemirror6"],
                     "codemirror-lang": [
                         // Add the following as needed.
@@ -121,10 +129,8 @@ export default defineConfig({
                     "codemirror-theme": [ "@codemirror/theme-one-dark" ],
                     iconify: ["@iconify/vue"],
                     "iconify-json": [
-                        // '@iconify-json/lucide',
                         '@iconify-json/tabler',
                     ]
-                    // ...
                 },
             },
         },

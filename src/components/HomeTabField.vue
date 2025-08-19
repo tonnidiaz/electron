@@ -1,18 +1,17 @@
 <script setup lang="ts">
-    import { useHomeStore } from '@/stores/home';
-    import { computed, ref } from 'vue';
+    import { TreeItemContent } from 'rs/lib';
+import { computed, ref } from 'vue';
 
-    const homeStore = useHomeStore()
-    const props = defineProps<{ k: 'params' | 'headers'; index: number; dataLen: number; isVal: boolean }>();
+    const props = defineProps<{ k: 'params' | 'headers'; index: number; dataLen: number; isVal: boolean; store: TreeItemContent }>();
 
     const items = computed({
-        get() { return homeStore[props.k] }, set(val) {
-            homeStore[props.k] = val;
+        get() { return props.store[props.k] }, set(val) {
+            props.store[props.k] = val;
         }
     })
     const item = computed({
-        get() { return homeStore[props.k][props.index] }, set(val) {
-            homeStore[props.k][props.index] = val;
+        get() { return props.store[props.k][props.index] }, set(val) {
+            props.store[props.k][props.index] = val;
         }
     })
 
@@ -27,9 +26,9 @@
             if ((!k && !item.at(1)) && index + 2 == dataLen) {
                 items.pop();
             } else if (k && items.length <= index) {
-                console.log('[i]', homeStore.selected[k]);
-                homeStore.selected[k][items.length - 2] = true;
-                homeStore.selected[k][items.length - 1] = true;
+                console.log('[i]', props.store.selected[k]);
+                props.store.selected[k][items.length - 2] = true;
+                props.store.selected[k][items.length - 1] = true;
             }
         }
     }" >

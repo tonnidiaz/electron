@@ -12,6 +12,7 @@ export const useTreeStore = defineStore("tree", {
         folderIcon: "i-tabler-folder",
         fileIcon: "i-tabler-file",
         onItemOpen: null as (item: TreeItem) => void,
+        onItemActive: null as (item: TreeItem) => void,
         ui: { prefix: '' },
     }),
 

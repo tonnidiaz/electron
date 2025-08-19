@@ -4,19 +4,21 @@
     import _ from 'lodash';
     import { storeToRefs } from 'pinia';
     import { SplitterGroup, SplitterPanel, SplitterResizeHandle } from 'reka-ui'
-    import { computed, onMounted, reactive, toRaw, watch } from 'vue';
+    import { computed, onMounted, reactive, ref, toRaw, watch } from 'vue';
     import axios, { AxiosError } from 'axios';
     import { Icon } from '@iconify/vue';
     import { useWorkspaceStore } from '@/stores/workspace';
+    import { TreeItemContent } from 'rs/lib';
 
     const wpStore = useWorkspaceStore()
-    const { content } = storeToRefs(wpStore);
-    const response = computed(()=> content.value.response)
-
+    const { content, response, item } = storeToRefs(wpStore);
+    const nochanges = ref(true);
+    const tab = ref("0")
 
     const id = "home__panel"
     const formState = reactive({
     });
+    const contentName = ref(content.value.name);
 
     const win = window;
     const resTabs = [{ label: 'Response' }, { label: 'Headers' }];
@@ -45,7 +47,7 @@
             axiosAbortCtrl = new AbortController();
             e.preventDefault();
             const headers = Object.fromEntries(_content.headers);
-            content.value.response.data = null;
+            response.value.data = null;
             // await sleep(3000);
             const res = await axios.request({
                 url: _content.url,
@@ -59,7 +61,7 @@
                 signal: axiosAbortCtrl.signal
             });
             let elapsed = Date.now() - t1;
-            _content.response = {
+            response.value = {
                 data: res.data, config: {
                     status: res.status,
                     duration: elapsed,
@@ -85,7 +87,7 @@
                 headers = Object.entries(_err.response?.headers || {}) || []
             }
 
-            _content.response = {
+            response.value = {
                 data: msg, config: {
                     status,
                     duration,
@@ -97,13 +99,22 @@
     };
     const updatedUrl = computed(() => content.value.url);
 
+
+    async function saveContent(_content: TreeItemContent) {
+        try {
+            await window.electronAPI.invoke("updateTreeItemContent", JSON.stringify(_content));
+            nochanges.value = true
+        } catch (err) {
+            console.log(err)
+        }
+    }
+
     onMounted(() => {
-        console.log(content.value)
         loadState();
         window.electronAPI?.onShowEditorCtxMenu((_, act, target) => {
             switch (act) {
                 case "clear":
-                    if (target == "editor") content.value.response.data = null;
+                    if (target == "editor") response.value.data = null;
                     else if (target == "input") content.value.url = "";
                     break;
             }
@@ -126,7 +137,7 @@
         content.value.url = newUrl
     }, { deep: true })
 
-    watch([()=>content.value.url, content.value.params], ([url]) => {
+    watch([() => content.value.url, content.value.params], ([url]) => {
         const _url = isValidURL(url);
         if (_url) {
             const urlParams = searchParamsToEntries(_url.searchParams);
@@ -136,17 +147,12 @@
         }
     })
 
-    watch(content, (state) => {
-        /* const _state: typeof state.$state = { ...state.$state };
-        delete _state.response;
-        delete _state.parsedResp;
-        delete _state.file;
-
-        localStorage.setItem(
-            STORAGE_KEY,
-            JSON.stringify(_state)
-        ) */
+    watch(content, (_c) => {
+        nochanges.value = false;
+        saveContent(_c)
     }, { deep: true, immediate: false })
+
+
 
 </script>
 
@@ -155,8 +161,18 @@
     <div class="flex-1 flex flex-col gap-2 h-full overflow-hidden">
         <SplitterGroup :id="id" :auto-save-id="id" direction="vertical">
             <SplitterPanel class="overflow-y-scroll px-4">
-                <div class="flex flex-col w-full gap-1 5">
-                    <UForm @submit="onSubmit" :state="formState" class="flex w-full">
+                <div class="flex flex-col w-full gap-2 5">
+                    <UForm :state="{}" class="w-full">
+                        <UButtonGroup class="w-full">
+                            <UInput variant="none" v-model="contentName" placeholder="Request name..." class="flex-1 border-b"/>
+                            <UButton @click="()=> {
+                                item.label = contentName;
+                                content.name = contentName;
+                            }" :disabled="!contentName || item.label == contentName" type="button" color="neutral" size="xs" label="Save"
+                                icon="i-tabler-download" />
+                        </UButtonGroup>
+                    </UForm>
+                    <UForm @submit="onSubmit" :state="formState" class="flex w-full gap-2">
                         <UButtonGroup class="w-full">
                             <USelect :items="[...METHODS]" v-model="content.method as any" placeholder="Method"
                                 :ui="{ content: 'min-w-fit' }" />
@@ -169,17 +185,21 @@
                                 }'>
 
                                 <template #trailing>
-                                    <UButton type="submit" class="w-13 flex-center" size="xs">Send</UButton>
                                 </template>
                             </UInput>
+                            <UButton type="submit" class="w-13 flex-center" size="xs">Send</UButton>
                         </UButtonGroup>
+                        
                     </UForm>
-                    <UTabs variant="link" color="neutral" class="w-full" model-value="1"
+                    <UTabs variant="link" color="neutral" class="w-full"
                         :items="[{ label: 'Params' }, { label: 'Body' }, { label: 'Headers' }]">
 
                         <template #content="{ item: tab }">
+                            <div class="p-4 hidden">
+                                <b>TAB:</b> {{ tab.label }}
+                            </div>
                             <HomeBodyTab v-if="tab.label.toLowerCase() == 'body'" />
-                            <HomeTab v-else :k="tab.label.toLowerCase() as any" />
+                            <HomeTab :store="wpStore.content" v-else :k="tab.label.toLowerCase() as any" />
                         </template>
                     </UTabs>
                 </div>
@@ -190,7 +210,7 @@
             </SplitterResizeHandle>
             <SplitterPanel class="px-4 relative h-full w-full p-1 rounded-md flex flex-col overflow-y-hidden">
 
-                <div class="px-2 rounded-sm bg-elevate self-en" v-if="response.data && response.config">
+                <div class="px-2 rounded-sm bg-elevate self-en" v-if="response?.data && response.config">
                     <div>
                         <div
                             :class='`flex gap-3 items-center flex-1 font-mono text-xs font-bold ${response.config.status != 200 ? "text-red-500" : "text-success"}`'>
@@ -208,7 +228,7 @@
                     </div>
 
                 </div>
-                <UTabs variant="link" size="md" color="neutral" :ui="{ content: 'flex-1 min-h-0' }" class="h-full"
+                <!-- <UTabs variant="link" size="md" color="neutral" :ui="{ content: 'flex-1 min-h-0' }" class="h-full"
                     :items="resTabs">
 
                     <template #content="{ item }">
@@ -243,7 +263,7 @@
 
                         </div>
                     </template>
-                </UTabs>
+                </UTabs> -->
             </SplitterPanel>
         </SplitterGroup>
     </div>

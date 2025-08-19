@@ -5,8 +5,8 @@
     import { storeToRefs } from "pinia";
     import { formatCode } from "./utils/funcs";
     import { type NavigationMenuItem } from "@nuxt/ui";
-import { addIconifyIcons } from "./iconify";
-import RFView from "./views/RFView.vue";
+    import { addIconifyIcons } from "./iconify";
+    import { flatList } from "@tufiletree/utils/consts";
 
     const homeStore = useHomeStore();
     const { response } = storeToRefs(homeStore);
@@ -58,6 +58,7 @@ import RFView from "./views/RFView.vue";
         console.log(
             '👋 This message is being logged by "App.vue", included via Vite'
         );
+        console.log({flatList})
         initDb()
         addIconifyIcons().then(()=>{
             console.log('[icons addes]')
@@ -78,7 +79,8 @@ import RFView from "./views/RFView.vue";
                 }" class="**:transition-none! **:text-default **:text-xs p-0! pl-1!" :items="menuItems" />
             <div class="h-full max-h-full flex w-full">
                 <TuSidebar />
-                <div class="flex-1 h-full max-h-full py-4">
+                <div class="flex-1 h-full max-h-full py-4 px-4">
+                    <h1>Hello world</h1>
                     <RouterView />
                      <!-- <RFView/> -->
                 </div>

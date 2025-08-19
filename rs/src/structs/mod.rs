@@ -5,6 +5,7 @@ use crate::{log, DB_CTX};
 pub struct DbCtx {
     pub db: sled::Db,
     pub file_trees: sled::Tree,
+    pub tree_items: sled::Tree,
     pub users: sled::Tree,
     pub tree_item_contents: sled::Tree,
 }
@@ -23,6 +24,7 @@ impl DbCtx {
 
         let ctx = DbCtx {
             file_trees: db.open_tree("file_trees")?,
+            tree_items: db.open_tree("tree_items")?,
             users: db.open_tree("users")?,
             tree_item_contents: db.open_tree("tree_item_contents")?,
             db,

@@ -1,10 +1,11 @@
 import { METHODS } from "./consts";
 import type CodeMirror from "vue-codemirror6";
 import type { VNodeProps, AllowedComponentProps } from "vue";
-export type Method = (typeof METHODS)[number];
-export type HttpOpts = [string, any][];
 import * as addon from "rs/lib"
 
+
+export type Method = (typeof METHODS)[number];
+export type HttpOpts = [string, any][];
 type RawProps = InstanceType<typeof CodeMirror>["$props"];
 export type PublicCodeMirrorProps = Omit<
     RawProps,
@@ -22,5 +23,7 @@ export type ColRequest = {
     body?: string;
     selected?: TableSelection;
 };
-export type TreeItem = addon.TreeItem & { open?: boolean; active?: boolean; content?: addon.TreeItemContent }
-export type FileTree = addon.FileTree & { items: TreeItem[]  }
+
+
+export type TreeItem = addon.TreeItem & { open?: boolean; active?: boolean; }
+export type TKey = "params" | "body" | "headers";

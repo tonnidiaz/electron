@@ -52,7 +52,8 @@ const config: ForgeConfig = {
             /.github/,
             /.db$/,
             /backup/,
-            "./rs/"
+            "./rs/",
+            /[\/\\]rs[\/\\]/
 
         ],
     },

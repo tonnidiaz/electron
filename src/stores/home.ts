@@ -4,7 +4,6 @@ import { defineStore } from "pinia";
 type T = [string, any][];
 // const testUrl = "http://localhost:8000/bots/wuecwiuhfwehiufw?full=true";
 
-export type TKey = "params" | "body" | "headers";
 export const useHomeStore = defineStore("home", {
     state: () => {
         console.log('Homeview')

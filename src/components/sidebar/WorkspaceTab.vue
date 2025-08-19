@@ -1,6 +1,7 @@
 <script setup lang="ts">
     import { useWorkspaceStore } from '@/stores/workspace';
-    import { it } from 'node:test';
+    import { TreeItem } from '@/utils/types';
+    import TuFileTree from '@tufiletree/components/TuFileTree.vue';
     import { storeToRefs } from 'pinia';
     import { onMounted, ref } from 'vue';
 
@@ -8,8 +9,6 @@
     const newWorkspace = ref(_newWorkspace);
     const newWorkspaceModalOpen = ref(false);
     const store = useWorkspaceStore();
-
-    const { workspaces: fileTrees } = storeToRefs(store)
 
     const win = window;
 
@@ -25,7 +24,7 @@
         try {
             const trees = await window.electronAPI.invoke("fetchTrees");
             console.log({ trees })
-            store.workspaces = trees;
+            store.fileTrees = trees;
         } catch (err) {
             console.log(err)
 
@@ -36,7 +35,7 @@
         e.preventDefault();
         try {
             const r = await window.electronAPI.invoke('createTree', newWorkspace.value);
-            store.workspaces.push(r);
+            store.fileTrees.push(r);
             newWorkspaceModalOpen.value = false
         } catch (err) {
             console.log(err)
@@ -44,16 +43,11 @@
     }
 
     onMounted(() => {
-        fetchFileTree()
+        if (!store.fileTrees.length)
+            fetchFileTree()
     });
 
-    /* watch(fileTrees, (items) => {
-        if (items) {
-            console.log({ items })
-            window.electronAPI.invoke('updateTree', JSON.stringify({ ...props.tree, items })).then().catch(console.log)
-        }
 
-    }, { deep: true }) */
 
 </script>
 
@@ -65,22 +59,34 @@
                 <UButton variant="soft" color="neutral" size="xs" icon="i-tabler-dots" />
             </UDropdownMenu>
         </div>
-        <div class="flex-grow">
-            <TuTree v-for="tree of fileTrees" :tree="tree" @item-open="async (it) => {
+        <div class="flex-grow flex flex-col gap-1.5">
 
+            <TuFileTree v-for="tree of store.workspaces" class="w-full" :tree="tree" @item-active="async (it) => {
+                if (it.children) return
+                console.log({ label: it.label, cid: it.contentId })
                 try {
                     const res = it.contentId ?
                         await win.electronAPI.invoke('getTreeItemContent', it.contentId) :
                         await win.electronAPI.invoke('createTreeItemContent');
-
-                    it.contentId = res.id;
-                    store.content = { ...it.content, parsedResp: '' }
+                    if (!it.contentId) {
+                        it.contentId = res.id;
+                        res.name = it.label;
+                        await win.electronAPI.invoke('updateTreeItemContent', JSON.stringify(res))
+                    }
+                    store.item = it
+                    store.content = res
                 }
                 catch (err) {
                     console.log(err)
                 }
 
+            }" @create-new-item="async (item: TreeItem) => {
+                item.treeId = tree.id
+                console.log('New',item)
+                item = await win.electronAPI.invoke('createTreeItem', item);
+                return item
             }" />
+            <!--   -->
         </div>
 
         <!-- New workspace modal -->
