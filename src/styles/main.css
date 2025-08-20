@@ -5,13 +5,17 @@
     @apply w-2xl!;
     min-width: 100%;
     max-width: fit-content;
-    @apply bg-neutral-900!;
-
+    /* @apply bg-neutral-900; */
 }
 
 .cm-content {
-    @apply bg-neutral-900! flex-1;
+    @apply bg-neutral-900;
+    user-select: none;
     /* min-width: 100%; */
-    
+
     /* max-width: fit-content; */
+}
+
+.cm-content *::selection, .cm-content *::-moz-selection {
+    /* @apply bg-red-500!; */
 }

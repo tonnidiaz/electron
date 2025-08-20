@@ -82,6 +82,7 @@ protocol.registerSchemesAsPrivileged([
     { scheme: "localvideo", privileges: { bypassCSP: true } },
 ]);
 
+
 let mainWindow: BrowserWindow | undefined;
 nativeTheme.themeSource = "dark";
 const createWindow = () => {

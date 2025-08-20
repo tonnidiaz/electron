@@ -52,11 +52,11 @@ pub async fn fetch_trees() -> Result<Vec<FileTree>> {
     .await
     .map_err(|err| Error::from_reason(err.to_string()))?;
 
-    for tree in res.iter_mut(){
-     if let Ok(items) = get_tree_items(&tree.id).await{
-        tree.items = items;
-     }   
+  for tree in res.iter_mut() {
+    if let Ok(items) = get_tree_items(&tree.id).await {
+      tree.items = items;
     }
+  }
   log!("{{ trees: {} }}", res.len());
   Ok(res)
 }
@@ -92,7 +92,6 @@ pub async fn create_tree_item_content() -> Result<TreeItemContent> {
   );
   Ok(item)
 }
-
 
 #[napi]
 pub async fn update_tree(data: String) -> Result<()> {
@@ -156,10 +155,14 @@ pub async fn create_tree_item(mut new_item: TreeItem) -> Result<TreeItem> {
 #[napi]
 pub async fn rename_tree_item(id: String, label: String) -> Result<String> {
   let db = &db_ctx()?.tree_items;
+  let mut content_id = None;
+
   let tx = db
     .fetch_and_update(id.as_bytes(), |x_opt| {
       if let Some(x) = x_opt {
         let mut item = bincode::deserialize::<TreeItem>(x).ok()?;
+
+        content_id = item.content_id.clone();
         item.label = label.clone();
         Some(bincode::serialize(&item).ok()?)
       } else {
@@ -171,6 +174,77 @@ pub async fn rename_tree_item(id: String, label: String) -> Result<String> {
   if tx.is_none() {
     return Err(Error::from_reason("Failed to rename tree item."));
   };
+
+  if let Some(content_id) = content_id {
+    //   rename content
+    let content_db = &db_ctx()?.tree_item_contents;
+    let _ = content_db.fetch_and_update(content_id.as_bytes(), |x_opt| {
+      if let Some(x) = x_opt {
+        if let Ok(mut content) = bincode::deserialize::<TreeItemContent>(x) {
+          content.name = label.clone();
+          return Some(bincode::serialize(&content).ok()?);
+        };
+        None
+      } else {
+        None
+      }
+    });
+  }
+
   Ok(label)
 }
 
+#[napi]
+pub async fn set_item_content_id(id: String, content_id: Option<String>) -> Result<Option<String>> {
+  let db = &db_ctx()?.tree_items;
+  let _tx = db
+    .fetch_and_update(id.as_bytes(), |x_opt| {
+      if let Some(x) = x_opt {
+        let mut item = bincode::deserialize::<TreeItem>(x).ok()?;
+        item.content_id = content_id.clone();
+        Some(bincode::serialize(&item).ok()?)
+      } else {
+        None
+      }
+    })
+    .map_err(|err| Error::from_reason(err.to_string()))?;
+  Ok(content_id)
+}
+
+#[napi]
+pub async fn delete_tree_items(ids: Option<Vec<String>>) -> Result<()> {
+  let db = &db_ctx()?.tree_items;
+  if let Some(ids) = ids {
+    for id in ids {
+      if let Err(err) = db.remove(id.as_bytes()) {
+        log!("Failed to remote item with id: {id}.\n{err:?}");
+      } else {
+        // Delete children
+        db
+          .iter()
+          .for_each(|x| {
+            if let Ok(x) = x {
+              if let Ok(val) = bincode::deserialize::<TreeItem>(&x.1) {
+                if val.parent_id == Some(id.clone()) {
+                  let _ = db.remove(x.0);
+                }
+              }
+            }
+          });
+      }
+    }
+  } else {
+    // remove all
+    db.clear()
+      .map_err(|err| Error::from_reason(err.to_string()))?;
+  }
+  Ok(())
+}
+
+#[napi]
+pub async fn delete_tree(id: String) -> Result<()> {
+  let db = &db_ctx()?.file_trees;
+  db.remove(id.as_bytes())
+    .map_err(|err| Error::from_reason(err.to_string()))?;
+  Ok(())
+}

@@ -30,8 +30,9 @@
         "isolatedModules": true,
         "noEmit": true,
         "jsx": "preserve",
+        "jsxImportSource": "vue",
         /* Linting */
-        "strict": false,
+        "strict": false, 
         "noUnusedLocals": true,
         "noUnusedParameters": true,
         "noFallthroughCasesInSwitch": true,
@@ -43,5 +44,11 @@
                 "./src/*"
             ]
         }
-    }
+    },
+    "vueCompilerOptions": {
+        "extensions": [
+            ".vue"
+        ],
+        "experimentalDisableTemplateSupport": false
+    },
 }

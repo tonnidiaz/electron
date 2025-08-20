@@ -37,6 +37,7 @@
         "isolatedModules": true,
         "noEmit": true,
         "jsx": "preserve",
+        "jsxImportSource": "vue",
         "strict": false,
         "noUnusedLocals": true,
         "noUnusedParameters": true,
@@ -52,5 +53,11 @@
                 "../../../libs/filtree/src/*"
             ]
         }
+    },
+    "vueCompilerOptions": {
+        "extensions": [
+            ".vue"
+        ],
+        "experimentalDisableTemplateSupport": false
     }
 }

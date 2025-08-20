@@ -1,12 +1,15 @@
 {
 	"folders": [
-		{
-			"path": "."
-		},
-		{
-			"path": "../../../libs/filtree"
-		}
-	],
+        {
+            "path": "."
+        },
+        {
+            "path": "../../../libs/filtree"
+        },
+        {
+            "path": "../../../apps/tu-vidld/backend"
+        }
+    ],
     "settings": {
         "files.associations": {
             "*.css": "tailwindcss"

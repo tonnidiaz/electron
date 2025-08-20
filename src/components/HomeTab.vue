@@ -8,10 +8,10 @@
 
 
     const props = defineProps<{
-        k: 'params' | 'headers', store: TreeItemContent
+        k: 'params' | 'headers', store: TreeItemContent,
     }>();
 
-
+ 
     type Row = { key: string, value: any };
 
     const data = computed<Row[]>(() => [...props.store[props.k], ["", ""]].map(el => ({
@@ -36,7 +36,7 @@
             cell: ({ row }) => {
                 const isLastRow = row.index == props.store[props.k].length;
                 // console.log({isLastRow})
-                if (isLastRow) {
+                if (isLastRow && props.store.selected[props.k]) {
                     props.store.selected[props.k][`${row.index}`] = true;
                 }
                 return /* isLastRow ? null : */ h(UCheckbox, {
@@ -55,7 +55,7 @@
                     size: 'xs',
                     variant: 'ghost',
                     color: 'error',
-                    icon: 'i-tabler-trash-2',
+                    icon: 'i-tabler-trash',
                     tabIndex: -1,
                     onClick: () => {
                         props.store[props.k].splice(row.index, 1)
@@ -77,7 +77,8 @@
     ]
 
 
-    watch([props.store.selected, ()=> props.k], ([selected, k])=>{
+    watch([()=>props.store.id, ()=> props.k], ([_, k])=>{
+        const selected = props.store.selected;
         // console.log('Here..', {k, selected: selected[k]})
         if (!selected[k] || !Object.keys(selected).length){
             // console.log('Here set..')
@@ -87,7 +88,7 @@
 </script>
 
 <template>
-    <div class="w-full flex-col">
+    <div class="w-full flex-col my-3">
         <UTable :ui="{ td: 'nth-[2]:p-0', th: 'nth-[2]:p-0', tr: 'bg-transparent! data-[selected=false]:opacity-50!' }"
             v-model:row-selection="props.store.selected[k]" :columns="columns" :data="data"
             class="border border-muted rounded-md"></UTable>

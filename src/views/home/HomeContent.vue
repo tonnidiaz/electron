@@ -1,19 +1,17 @@
 <script setup lang="ts">
     import { METHODS } from '@/utils/consts';
-    import { isValidURL, searchParamsToEntries } from '@/utils/funcs';
+    import { formatCode, isValidURL, searchParamsToEntries } from '@/utils/funcs';
     import _ from 'lodash';
     import { storeToRefs } from 'pinia';
     import { SplitterGroup, SplitterPanel, SplitterResizeHandle } from 'reka-ui'
     import { computed, onMounted, reactive, ref, toRaw, watch } from 'vue';
     import axios, { AxiosError } from 'axios';
-    import { Icon } from '@iconify/vue';
     import { useWorkspaceStore } from '@/stores/workspace';
     import { TreeItemContent } from 'rs/lib';
 
     const wpStore = useWorkspaceStore()
-    const { content, response, item } = storeToRefs(wpStore);
+    const { content, response, item, parsedResp, isSending } = storeToRefs(wpStore);
     const nochanges = ref(true);
-    const tab = ref("0")
 
     const id = "home__panel"
     const formState = reactive({
@@ -23,31 +21,20 @@
     const win = window;
     const resTabs = [{ label: 'Response' }, { label: 'Headers' }];
 
-    const STORAGE_KEY = `/home__state`;
-    const loadState = () => {
-        console.log("Loading homeState...");
-        const s = localStorage.getItem(STORAGE_KEY);
-        if (s) {
-            const jsonS = JSON.parse(s);
-            // homeStore.updateState(jsonS);
-            /* const _url = isValidURL(jsonS.url);
-
-            if (_url) {
-                homeStore.params = searchParamsToEntries(_url.searchParams)
-            } */
-        }
-    };
-
     let axiosAbortCtrl: AbortController | undefined;
+
+
+    const updatedUrl = computed(() => content.value.url);
 
     const onSubmit = async (e) => {
         const t1 = Date.now();
         const _content = content.value;
+        isSending.value = true;
         try {
             axiosAbortCtrl = new AbortController();
             e.preventDefault();
             const headers = Object.fromEntries(_content.headers);
-            response.value.data = null;
+            response.value = null;
             // await sleep(3000);
             const res = await axios.request({
                 url: _content.url,
@@ -95,13 +82,13 @@
                     headers,
                 }
             }
+        } finally {
+            isSending.value = false
         }
     };
-    const updatedUrl = computed(() => content.value.url);
-
-
     async function saveContent(_content: TreeItemContent) {
         try {
+
             await window.electronAPI.invoke("updateTreeItemContent", JSON.stringify(_content));
             nochanges.value = true
         } catch (err) {
@@ -110,7 +97,6 @@
     }
 
     onMounted(() => {
-        loadState();
         window.electronAPI?.onShowEditorCtxMenu((_, act, target) => {
             switch (act) {
                 case "clear":
@@ -142,7 +128,11 @@
         if (_url) {
             const urlParams = searchParamsToEntries(_url.searchParams);
             const params = toRaw(content.value.params);
-            if (_.isEqual(params, urlParams) || url == updatedUrl.value) return;
+            const cond1 = _.isEqual(params, urlParams), cond2 = url == updatedUrl.value;
+
+            console.log({ cond1, cond2 })
+            if (cond1 && cond2) return;
+            console.log('Updating params...')
             content.value.params = urlParams;
         }
     })
@@ -152,24 +142,35 @@
         saveContent(_c)
     }, { deep: true, immediate: false })
 
+    watch(() => content.value.name, _name => {
+        contentName.value = _name
+
+    })
+
+    watch(response, resp => {
+        const response = resp?.data
+        const res = typeof response == 'object' ? JSON.stringify(response) : response;
+        wpStore.parsedResp = res
+    }, { deep: true, immediate: true })
 
 
 </script>
 
 <template>
 
-    <div class="flex-1 flex flex-col gap-2 h-full overflow-hidden">
+    <div class="flex-1 flex flex-col gap-2 h-full overflow-hidden py-2">
         <SplitterGroup :id="id" :auto-save-id="id" direction="vertical">
             <SplitterPanel class="overflow-y-scroll px-4">
                 <div class="flex flex-col w-full gap-2 5">
                     <UForm :state="{}" class="w-full">
                         <UButtonGroup class="w-full">
-                            <UInput variant="none" v-model="contentName" placeholder="Request name..." class="flex-1 border-b"/>
-                            <UButton @click="()=> {
+                            <UInput variant="none" v-model="contentName" placeholder="Request name..."
+                                class="flex-1 border-b" />
+                            <UButton @click="() => {
                                 item.label = contentName;
                                 content.name = contentName;
-                            }" :disabled="!contentName || item.label == contentName" type="button" color="neutral" size="xs" label="Save"
-                                icon="i-tabler-download" />
+                            }" :disabled="!contentName || item.label == contentName" type="button" color="neutral"
+                                size="xs" label="Save" icon="i-tabler-download" />
                         </UButtonGroup>
                     </UForm>
                     <UForm @submit="onSubmit" :state="formState" class="flex w-full gap-2">
@@ -178,18 +179,16 @@
                                 :ui="{ content: 'min-w-fit' }" />
                             <UInput variant="outline" spellcheck="false" required v-model="content.url"
                                 placeholder="e.g. https://tunedstreamz.com" type="url" class="flex-1"
-                                :ui="{ trailing: 'pr-1', base: 'pr-15 font-mono' }" :oncontextmenu='() => {
+                                :ui="{ trailing: 'pr-1', base: 'font-mono' }" :oncontextmenu='() => {
                                     win.electronAPI.showEditorCtxMenu(
                                         "input"
                                     );
                                 }'>
 
-                                <template #trailing>
-                                </template>
                             </UInput>
                             <UButton type="submit" class="w-13 flex-center" size="xs">Send</UButton>
                         </UButtonGroup>
-                        
+
                     </UForm>
                     <UTabs variant="link" color="neutral" class="w-full"
                         :items="[{ label: 'Params' }, { label: 'Body' }, { label: 'Headers' }]">
@@ -204,11 +203,12 @@
                     </UTabs>
                 </div>
             </SplitterPanel>
-            <SplitterResizeHandle class="p-1 my-1 rounded-md flex-col flex gap-1">
+            <SplitterResizeHandle
+                class="p-1 my-1 rounded-md flex-col flex gap-1 w-full shadow-2xl border-t-2 border-neutral-950/50">
                 <USeparator orientation="horizontal"></USeparator>
                 <USeparator orientation="horizontal"></USeparator>
             </SplitterResizeHandle>
-            <SplitterPanel class="px-4 relative h-full w-full p-1 rounded-md flex flex-col overflow-y-hidden">
+            <SplitterPanel class=" px-4 relative h-full w-full p-1 rounded-md flex flex-col overflow-y-hidden">
 
                 <div class="px-2 rounded-sm bg-elevate self-en" v-if="response?.data && response.config">
                     <div>
@@ -217,8 +217,8 @@
                             <span title="status">
                                 {{ response.config.status }}
                             </span>
-                            <span title="duration" class="inline-flex gap-1">
-                                <Icon icon="i-tabler-clock"></Icon>
+                            <span title="duration" class="inline-flex items-center">
+                                <UButton size="xs" variant="ghost" icon="i-tabler-clock"></UButton>
                                 {{ response.config.duration }}ms
                             </span>
                             <span title="size">
@@ -228,23 +228,20 @@
                     </div>
 
                 </div>
-                <!-- <UTabs variant="link" size="md" color="neutral" :ui="{ content: 'flex-1 min-h-0' }" class="h-full"
+                <UTabs variant="link" size="md" color="neutral" :ui="{ content: 'flex-1 min-h-0' }" class="h-full"
                     :items="resTabs">
 
                     <template #content="{ item }">
                         <div class="p-1 bg-neutral-800/20 rounded-sm relative h-full flex flex-col max-h-full">
                             <div class="h-full flex flex-col" v-if="item.label.toLowerCase() == 'response'">
-                                <div v-if="content.parsedResp"
-                                    class="w-full flex gap-2 px-2 py-1 rounded-sm bg-elevated">
+                                <div v-if="parsedResp" class="w-full flex gap-2 px-2 py-1 rounded-sm bg-elevated">
                                     <UButton icon="i-tabler-copy" size="sm" isIconOnly />
-                                    <UButton icon="i-tabler-brush-cleaning" size="sm"
-                                        @click="content.response.data = ''" />
+                                    <UButton icon="i-tabler-cancel" size="sm" @click="response.data = ''" />
                                 </div>
 
                                 <div @contextmenu='' class="flex-1 min-h-0 overflow-y-scroll">
-                                    <div v-if="!content.response"
-                                        class="w-full h-full flex-center gap-2 flex-col opacity-70">
-                                        <div v-if="content.response == null" class="flex-center gap-2 flex-col ">
+                                    <div v-if="!response" class="w-full h-full flex-center gap-2 flex-col opacity-70">
+                                        <div v-if="isSending" class="flex-center gap-2 flex-col ">
                                             <UProgress :ui="{ root: 'w-30' }" size="sm" color="neutral" />
                                             <UButton @click="() => { axiosAbortCtrl.abort() }" size="sm"
                                                 variant="outline" color="warning">
@@ -253,7 +250,18 @@
                                         </div>
                                         <p v-else class="text-md">Nothing to show</p>
                                     </div>
-                                    <TuCodeMirror v-else readonly v-model="content.parsedResp" />
+                                    <UContextMenu v-else :items="[
+                                        { label: 'Select all' },
+                                        {
+                                            label: 'Format', async onSelect() {
+                                                wpStore.parsedResp = await formatCode(parsedResp)
+                                            }
+                                        },
+                                        { label: 'Copy' },
+                                        { label: 'Clear' },
+                                    ]">
+                                        <TuCodeMirror readonly v-model="parsedResp" />
+                                    </UContextMenu>
                                 </div>
                             </div>
                             <div class="h-full" v-else-if="item.label.toLowerCase() == 'headers'">
@@ -263,7 +271,7 @@
 
                         </div>
                     </template>
-                </UTabs> -->
+                </UTabs>
             </SplitterPanel>
         </SplitterGroup>
     </div>

@@ -6,6 +6,10 @@ export declare function createTreeItem(newItem: TreeItem): Promise<TreeItem>
 
 export declare function createTreeItemContent(): Promise<TreeItemContent>
 
+export declare function deleteTree(id: string): Promise<void>
+
+export declare function deleteTreeItems(ids?: Array<string> | undefined | null): Promise<void>
+
 export declare function fetchTree(id: string): Promise<FileTree>
 
 export declare function fetchTrees(): Promise<Array<FileTree>>
@@ -23,6 +27,8 @@ export declare function hello(name: string): string
 export declare function initDb(dbName: string): string
 
 export declare function renameTreeItem(id: string, label: string): Promise<string>
+
+export declare function setItemContentId(id: string, contentId?: string | undefined | null): Promise<string | null>
 
 export interface TreeItem {
   id: string

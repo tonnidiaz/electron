@@ -9,6 +9,7 @@ export const useWorkspaceStore = defineStore("wp", {
         fileTrees: [] as addon.FileTree[],
         content: null as addon.TreeItemContent | null,
         item: null as TreeItem,
+        isSending: false,
         response: null as {
             data: string;
             config?: {
@@ -19,13 +20,15 @@ export const useWorkspaceStore = defineStore("wp", {
             };
         } | null,
         parsedResp: "",
+        file: null
     }),
 
     getters: {
         // parsed
         workspaces(): FileTree[]{
-            return this.fileTrees.map(tree=> ({...tree, items: buildFiletree(tree.items as FlatTreeItem[])}))
+            return this.fileTrees.map(tree=> ({...tree, items: buildFiletree(tree.items as FlatTreeItem[]),}))
 
-        }
-    }
+        },
+    },
+
 });

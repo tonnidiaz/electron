@@ -1,9 +1,10 @@
 <script setup lang="ts">
     import { useWorkspaceStore } from '@/stores/workspace';
-    import { TreeItem } from '@/utils/types';
     import TuFileTree from '@tufiletree/components/TuFileTree.vue';
-    import { storeToRefs } from 'pinia';
     import { onMounted, ref } from 'vue';
+    import * as addon from "rs/lib"
+    import { FileTree, TreeItem } from '@tufiletree/utils/types';
+    import { DropdownMenuItem } from '@nuxt/ui';
 
     const _newWorkspace = 'New workspace';
     const newWorkspace = ref(_newWorkspace);
@@ -12,13 +13,13 @@
 
     const win = window;
 
-    const ddOpts = [
+    const ddOpts: DropdownMenuItem[] = [
         {
             label: "New workspace",
             async onSelect() {
                 newWorkspaceModalOpen.value = true;
             }
-        }
+        },
     ]
     const fetchFileTree = async () => {
         try {
@@ -42,7 +43,38 @@
         }
     }
 
+    const onItemActive = async (open: boolean, _it: TreeItem, i: number) => {
+        if (!open) return;
+        const it = store.fileTrees[i].items.find(el => el.id == _it.id);
+        if (it.type == 'folder') return
+        try {
+            const res = it.contentId ?
+                await win.electronAPI.invoke('getTreeItemContent', it.contentId) :
+                await win.electronAPI.invoke('createTreeItemContent');
+            if (!it.contentId) {
+                it.contentId = res.id;
+                res.name = it.label;
+                await win.electronAPI.invoke('setItemContentId', it.id, res.id)
+                await win.electronAPI.invoke('updateTreeItemContent', JSON.stringify(res))
+            }
+            store.item = it
+            store.content = res
+        }
+        catch (err) {
+            console.log(err)
+        }
+
+    }
+
+    const createNewItem = async (_it: TreeItem, tree: FileTree, i: number) => {
+        let item: addon.TreeItem = { ..._it }
+        item.treeId = tree.id
+        item = await win.electronAPI.invoke('createTreeItem', item);
+        store.fileTrees[i].items.push(item);
+        return { ..._it, id: item.id }
+    }
     onMounted(() => {
+        console.log('Mounted')
         if (!store.fileTrees.length)
             fetchFileTree()
     });
@@ -61,32 +93,26 @@
         </div>
         <div class="flex-grow flex flex-col gap-1.5">
 
-            <TuFileTree v-for="tree of store.workspaces" class="w-full" :tree="tree" @item-active="async (it) => {
-                if (it.children) return
-                console.log({ label: it.label, cid: it.contentId })
-                try {
-                    const res = it.contentId ?
-                        await win.electronAPI.invoke('getTreeItemContent', it.contentId) :
-                        await win.electronAPI.invoke('createTreeItemContent');
-                    if (!it.contentId) {
-                        it.contentId = res.id;
-                        res.name = it.label;
-                        await win.electronAPI.invoke('updateTreeItemContent', JSON.stringify(res))
+            <TuFileTree v-for="(tree, i) of store.workspaces" class="w-full" :tree="tree"
+            :open="true"
+                @item-active="(active, it) => onItemActive(active, it, i)"
+                @create-new-item="it => createNewItem(it, tree, i)" @rename-item="async (id, val) => {
+                    let res = win.electronAPI.invoke('renameTreeItem', id, val);
+                    let item = store.fileTrees[i].items.find(el => el.id == id)
+                    if (store.content && store.content.id == item.contentId) {
+                        store.content.name = val
                     }
-                    store.item = it
-                    store.content = res
-                }
-                catch (err) {
-                    console.log(err)
-                }
+                    return res
+                }" @clear-tree="async id => {
+                    const tree = store.fileTrees.find(el => el.id == id)
+                    await win.electronAPI.invoke('deleteTreeItems', tree.items.map(el => el.id))
+                    tree.items = []
 
-            }" @create-new-item="async (item: TreeItem) => {
-                item.treeId = tree.id
-                console.log('New',item)
-                item = await win.electronAPI.invoke('createTreeItem', item);
-                return item
-            }" />
-            <!--   -->
+                    return
+                }" @delete-item="async (id) => {
+                    await win.electronAPI.invoke('deleteTreeItems', [id])
+                    return true
+                }" />
         </div>
 
         <!-- New workspace modal -->

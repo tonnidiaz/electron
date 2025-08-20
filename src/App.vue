@@ -1,5 +1,5 @@
 <script setup lang="ts">
-    import { onMounted, watch } from "vue";
+    import { onMounted, ref, watch } from "vue";
     import UApp from "@nuxt/ui/components/App.vue";
     import { useHomeStore } from "./stores/home";
     import { storeToRefs } from "pinia";
@@ -10,6 +10,8 @@
 
     const homeStore = useHomeStore();
     const { response } = storeToRefs(homeStore);
+    const ready = ref(false)
+
     const menuItems: NavigationMenuItem[] = [
         {
             label: "File",
@@ -36,9 +38,10 @@
     ];
     defineShortcuts(extractShortcuts(menuItems))
 
-    const initDb = () =>{
+    const initDb = async () =>{
         console.log('\nINIT_DB')
-        window.electronAPI.invoke('initDb', '').then(console.log).catch(console.log)
+        await window.electronAPI.invoke('initDb', '').then(console.log).catch(console.log);
+        ready.value = true
     }
     watch(
         response,
@@ -68,7 +71,7 @@
 
 <template>
     <UApp>
-        <main class="h-full w-full max-h-full bg-default">
+        <main v-if="ready" class="h-full w-full max-h-full bg-default">
             <UNavigationMenu v-if="false" :skip-delay-duration="0" trailing-icon="none" :delay-duration="0"
                 :disable-pointer-leave-close="false" content-orientation="vertical" variant="link" :arrow="true" :ui="{
                     item: 'p-0!',
@@ -79,8 +82,7 @@
                 }" class="**:transition-none! **:text-default **:text-xs p-0! pl-1!" :items="menuItems" />
             <div class="h-full max-h-full flex w-full">
                 <TuSidebar />
-                <div class="flex-1 h-full max-h-full py-4 px-4">
-                    <h1>Hello world</h1>
+                <div class="flex-1 h-full max-h-full">
                     <RouterView />
                      <!-- <RFView/> -->
                 </div>
